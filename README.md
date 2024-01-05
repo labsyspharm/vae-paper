@@ -30,7 +30,7 @@ Peter K. Sorger<sup>1,2,3,#</sup></h5>
 
 ## Abstract
 
-A detailed characterization of human tissue organization and understanding of how multi-scale histological structures differ in response to disease and therapy can serve as important biomarkers of disease progression and therapeutic response. Although highly multiplex images of tissue contain detailed information on the abundance and distribution of proteins within and across cells, their analysis via segmentation-based methods captures little morphological information, suffers from signal contamination across segmentation boundaries, and requires custom algorithms to study multi-cellular tissue organization. Here we classify individual cell states and recurrent microscale tissue architectures in human colorectal adenocarcinoma by training variational autoencoder (VAE) deep learning networks on multi-scale image patches and demonstrate how this fully unsupervised generative computer vision approach can achieve detailed information on cell lineage, morphology, and multi-cellular neighborhood context while overcoming intrinsic limitations of image segmentation.
+A detailed characterization of human tissue organization and understanding of how multiscale histological structures differ in response to disease and therapy can serve as important biomarkers of disease progression and therapeutic response. Although highly multiplex images of tissue contain detailed information on the abundance and distribution of proteins within and across cells, their analysis via segmentation-based methods captures little morphological information, is influenced by signal contamination across segmentation boundaries, and requires custom algorithms to study multi-cellular tissue architectures. Here we classify individual cell states and recurrent microscale tissue motifs in human colorectal adenocarcinoma by training a class of generative neural networks (variational autoencoders, VAEs) on multi-scale image patches derived from whole-slide imaging data. Our work demonstrates how this unsupervised computer vision approach can be used to characterize cells and their higher-order structural assemblies in a manner that simultanously accounts for protein abundance and spatial distribution while overcoming many of the limitations intrinsic to segmentation-based analysis.
 
 The Python code (i.e., Jupyter Notebooks) in this GitHub repository was used to generate the figures in the aforementioned study.
 
@@ -41,24 +41,15 @@ The Python code (i.e., Jupyter Notebooks) in this GitHub repository was used to 
 
 ## VAE Source Code
 
-![](./docs/cylinter-logo.svg)
-
-CyLinter software is written in Python3, archived on the Anaconda package repository, versioned controlled on [Git/GitHub](https://github.com/labsyspharm/cylinter), instantiated as a configurable Python Class object, and validated for Mac and PC operating systems. Information on how to install and run the program is available at the [CyLinter website](https://labsyspharm.github.io/cylinter/). 
+Source code for the VAE analysis pipeline used in this study is freely-available and archived on [GitHub](https://github.com/labsyspharm/vae). 
 
 ---
 
 
 ## Data Availability
 
-New data associated with this paper is available at the [HTAN Data Portal](https://data.humantumoratlas.org). Previously published data is through public repositories. See Supplementary Table 1 for a complete list of datasets and their associated identifiers and repositories. Online Supplementary Figures 1-4 and the CyLinter demonstration dataset can be accessed at [Sage Synapse](https://www.synapse.org/#!Synapse:syn24193163/files)
+New data associated with this paper is available at the [HTAN Data Portal](https://data.humantumoratlas.org). Input data required to run the source code found here is freely-available at [Sage Synapse](https://www.synapse.org/#!Synapse:syn24193163/files)
 
-
----
-
-
-## Image Processing
-
-The whole-slide and tissue microarray images described in this study were processed using [MCMICRO](https://mcmicro.org/) [[2]](#2) image assembly and feature extraction pipeline.
 
 ---
 
