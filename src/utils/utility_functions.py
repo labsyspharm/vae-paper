@@ -1,5 +1,6 @@
 import os
 import re
+import shutil
 
 import numpy as np
 import pandas as pd
@@ -7,8 +8,10 @@ import pandas as pd
 import cv2
 from tqdm import tqdm
 from math import ceil
+from decimal import Decimal
 from itertools import combinations
 
+import seaborn as sns
 from matplotlib import cm
 from matplotlib import colors
 import matplotlib.pyplot as plt
@@ -30,9 +33,12 @@ import tifffile
 import dask.array as da
 
 from scipy.stats import tstd
+from scipy.stats import kstest
 from scipy.stats import f_oneway
+from scipy.stats import pearsonr
 from scipy.stats import tukey_hsd
 from scipy.stats import mannwhitneyu
+from scipy.spatial.distance import cityblock
 
 
 def transposeZarr(z):
@@ -110,7 +116,7 @@ def kl_divergence(p, q):
     return np.sum(p[filt] * np.log2(p[filt] / q[filt]))
 
 
-def u_stats(df, metric, cluster_select):
+def u_stats(df, metric, cluster_select, expressed_channels, markers, combo_name):
     """Compute Mann-Whitney U-test between similarity
        metrics of two clusters."""
 
@@ -189,7 +195,7 @@ def hsd(df, metric):
     return hsds
 
 
-def compare_clusters(clus1_name, clus1, clus1_ids, clus2_name, clus2, clus2_ids, metric, expressed_channels, markers, X_combo):
+def compare_clusters(clus1_name, clus1, clus1_ids, clus2_name, clus2, clus2_ids, metric, expressed_channels, markers, X_combo, combo_name, save_dir):
     """Compute similarity metrics for two clusters of image patches."""
 
     print()
@@ -404,7 +410,7 @@ def compare_clusters(clus1_name, clus1, clus1_ids, clus2_name, clus2, clus2_ids,
     return df, cluster_select, sq_err
 
 
-def plot(df, metric, stats, color, sq_err):
+def plot(df, metric, stats, color, sq_err, combo_name, clus_pair, save_dir):
     """Plot similarity metric data."""
 
     df['cluster'] = ['ref.' if i != combo_name else i for i in df['cluster']]
@@ -412,7 +418,7 @@ def plot(df, metric, stats, color, sq_err):
 
     g = sns.catplot(
         data=df, x='marker', y=metric, hue='cluster', kind='boxen',
-        palette=['grey', color], aspect=1.5, legend=False
+        palette=['grey', color], aspect=1.5, legend=True
     )
     g.set(ylim=(None, None))
     g.set_xticklabels(fontsize=15, weight='normal', rotation=45)
@@ -456,6 +462,7 @@ def plot(df, metric, stats, color, sq_err):
 
     plt.tight_layout()
     plt.savefig(os.path.join(save_dir, f'{metric}_boxenplots.pdf'))
+    plt.show()
     plt.close('all')
 
     # hists
@@ -473,10 +480,11 @@ def plot(df, metric, stats, color, sq_err):
         ax.set_ylabel(ax.get_ylabel(), fontsize=15, weight='normal')
     plt.tight_layout()
     plt.savefig(os.path.join(save_dir, f'{metric}_kdeplots.pdf'))
+    plt.show()
     plt.close('all')
 
     # squared error
-    fig = plt.figure()
+    fig = plt.figure(figsize=(10, 5))
     rows = 1
     cols = len(sq_err.keys())
     intensity_multiplier = 1.25
