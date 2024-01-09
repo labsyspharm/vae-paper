@@ -48,7 +48,7 @@ Source code for the VAE analysis pipeline used in this study is freely-available
 
 ## Data Availability
 
-New data associated with this paper is available at the [HTAN Data Portal](https://data.humantumoratlas.org). Input data required to run the source code found here is freely-available at [Sage Synapse](https://www.synapse.org/#!Synapse:syn24193163/files)
+New data associated with this paper is available at the [HTAN Data Portal](https://data.humantumoratlas.org). Input data required to run the source code found here is freely-available at [Sage Synapse](https://www.synapse.org/#!Synapse:syn53216852/files/)
 
 
 ---
