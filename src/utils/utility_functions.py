@@ -109,6 +109,13 @@ def reverse_processing(percentile_cutoffs, channel_slice, channel_name, contrast
     return channel_slice
 
 
+def jaccard_index(set1, set2):
+    """Function to calculate Jaccard Index between two sets"""
+    intersection = len(set(set1).intersection(set2))
+    union = len(set(set1).union(set2))
+    return intersection / union if union != 0 else 0
+
+
 def kl_divergence(p, q):
     p = np.asarray(p)
     q = np.asarray(q)
@@ -195,7 +202,7 @@ def hsd(df, metric):
     return hsds
 
 
-def compare_clusters(clus1_name, clus1, clus1_ids, clus2_name, clus2, clus2_ids, metric, expressed_channels, markers, X_combo, combo_name, save_dir):
+def compare_clusters(clus1_name, clus1, clus2_name, clus2, metric, expressed_channels, markers, X_combo, combo_name, save_dir, window_size):
     """Compute similarity metrics for two clusters of image patches."""
 
     print()
@@ -211,8 +218,8 @@ def compare_clusters(clus1_name, clus1, clus1_ids, clus2_name, clus2, clus2_ids,
             measurements_within = []
             for combo in tqdm(
                     combinations(clus_ids, 2), total=len(list(combinations(clus_ids, 2)))):
-                img1 = X_combo[ch, combo[0]]
-                img2 = X_combo[ch, combo[1]]
+                img1 = X_combo[combo[0], :, :, ch]
+                img2 = X_combo[combo[1], :, :, ch]
                 img1 = (
                     (img1 - np.min(img1)) / (np.max(img1) - np.min(img1)).astype('float32')
                 )
@@ -316,21 +323,21 @@ def compare_clusters(clus1_name, clus1, clus1_ids, clus2_name, clus2, clus2_ids,
 
         z1 = zarr.open(
             os.path.join(save_dir, 'error1.zarr'), mode='w',
-            shape=(30, 30, len(clus1) * len(clus2)),
-            chunks=(30, 30, 200), dtype='float32'
+            shape=(window_size, window_size, len(clus1) * len(clus2)),
+            chunks=(window_size, window_size, 200), dtype='float32'
         )
         z2 = zarr.open(
             os.path.join(save_dir, 'error2.zarr'), mode='w',
-            shape=(30, 30, len(clus1) * len(clus2)),
-            chunks=(30, 30, 200), dtype='float32'
+            shape=(window_size, window_size, len(clus1) * len(clus2)),
+            chunks=(window_size, window_size, 200), dtype='float32'
         )
         temp_df = pd.DataFrame(columns=['cluster', 'marker', metric])
         measurements_across = []
         err_counter = 0
         for i in tqdm(clus1):
             for j in clus2:
-                img1 = X_combo[ch, i]
-                img2 = X_combo[ch, j]
+                img1 = X_combo[i, :, :, ch]
+                img2 = X_combo[j, :, :, ch]
 
                 img1 = (
                     (img1 - np.min(img1)) / (np.max(img1) - np.min(img1)).astype('float32')
@@ -344,12 +351,10 @@ def compare_clusters(clus1_name, clus1, clus1_ids, clus2_name, clus2, clus2_ids,
 
                     err1 = (img1 - img2)
                     err1[err1 < 0] = 0
-                    err1 = err1**2
                     z1[:, :, err_counter] = err1
 
                     err2 = (img2 - img1)
                     err2[err2 < 0] = 0
-                    err2 = err2**2
                     z2[:, :, err_counter] = err2
 
                 err_counter += 1
@@ -410,7 +415,7 @@ def compare_clusters(clus1_name, clus1, clus1_ids, clus2_name, clus2, clus2_ids,
     return df, cluster_select, sq_err
 
 
-def plot(df, metric, stats, color, sq_err, combo_name, clus_pair, save_dir):
+def plot(df, metric, stats, sq_err, combo_name, clus_pair, save_dir):
     """Plot similarity metric data."""
 
     df['cluster'] = ['ref.' if i != combo_name else i for i in df['cluster']]
@@ -418,7 +423,7 @@ def plot(df, metric, stats, color, sq_err, combo_name, clus_pair, save_dir):
 
     g = sns.catplot(
         data=df, x='marker', y=metric, hue='cluster', kind='boxen',
-        palette=['grey', color], aspect=1.5, legend=True
+        palette=['gray', 'white'], aspect=1.5, legend=True
     )
     g.set(ylim=(None, None))
     g.set_xticklabels(fontsize=15, weight='normal', rotation=45)
@@ -468,7 +473,7 @@ def plot(df, metric, stats, color, sq_err, combo_name, clus_pair, save_dir):
     # hists
     g = sns.displot(
         data=df, x=metric, hue='cluster', col='marker', kind='kde',
-        aspect=1.5, palette=['grey', color], lw=5
+        aspect=1.5, palette=['grey', 'k'], lw=5
     )
     for ax in g.axes.flat:
         if metric == 'LBP':
@@ -514,8 +519,9 @@ def plot(df, metric, stats, color, sq_err, combo_name, clus_pair, save_dir):
 
         legend_elements = []
         for name, im, color in zip(
-                [clus_pair[0], clus_pair[1]], [img1, img2], ['cornflowerblue', 'yellow']):
-            overlay += im * to_rgb(color)
+                [clus_pair[0], clus_pair[1]], [img1, img2],
+                [[0.13, 0.68, 0.97], [0.97, 0.68, 0.13]]):
+            overlay += im * color
             legend_elements.append(Line2D([0], [0], color=color, lw=1, label=name))
 
         ax.imshow(overlay)
@@ -763,26 +769,27 @@ def categorical_cmap(numUniqueSamples, numCatagories, cmap='tab10', continuous=F
         ccolors = plt.get_cmap(cmap)(np.linspace(0, 1, numCatagories))
     else:
         ccolors = plt.get_cmap(cmap)(np.arange(numCatagories, dtype=int))
+
         # rearrange hue order to taste
-        cd = {
-            'B': 0, 'O': 1, 'G': 2, 'R': 3, 'Pu': 4,
-            'Br': 5, 'Pi': 6, 'Gr': 7, 'Y': 8, 'Cy': 9,
-        }
-        myorder = [
-            cd['B'], cd['O'], cd['G'], cd['Pu'], cd['Y'],
-            cd['R'], cd['Cy'], cd['Br'], cd['Gr'], cd['Pi']
-        ]
-        ccolors = [ccolors[i] for i in myorder]
+        # cd = {
+        #     'B': 0, 'O': 1, 'G': 2, 'R': 3, 'Pu': 4,
+        #     'Br': 5, 'Pi': 6, 'Gr': 7, 'Y': 8, 'Cy': 9,
+        # }
+        # myorder = [
+        #     cd['B'], cd['O'], cd['G'], cd['Pu'], cd['Y'],
+        #     cd['R'], cd['Cy'], cd['Br'], cd['Gr'], cd['Pi']
+        # ]
+        # ccolors = [ccolors[i] for i in myorder]
 
         # use Okabe and Ito color-safe palette for first 6 colors
         # ccolors[0] = np.array([0.91, 0.29, 0.235]) #E84A3C
         # ccolors[1] = np.array([0.18, 0.16, 0.15]) #2E2926
-        ccolors[0] = np.array([0.0, 0.447, 0.698, 1.0])  # blue
-        ccolors[1] = np.array([0.902, 0.624, 0.0, 1.0])  # orange
-        ccolors[2] = np.array([0.0, 0.620, 0.451, 1.0])  # bluish green
-        ccolors[3] = np.array([0.8, 0.475, 0.655, 1.0])  # reddish purple
-        ccolors[4] = np.array([0.941, 0.894, 0.259, 1.0])  # yellow
-        ccolors[5] = np.array([0.835, 0.369, 0.0, 1.0])  # vermillion
+        # ccolors[0] = np.array([0.0, 0.447, 0.698, 1.0])  # blue
+        # ccolors[1] = np.array([0.902, 0.624, 0.0, 1.0])  # orange
+        # ccolors[2] = np.array([0.0, 0.620, 0.451, 1.0])  # bluish green
+        # ccolors[3] = np.array([0.8, 0.475, 0.655, 1.0])  # reddish purple
+        # ccolors[4] = np.array([0.941, 0.894, 0.259, 1.0])  # yellow
+        # ccolors[5] = np.array([0.835, 0.369, 0.0, 1.0])  # vermillion
 
     cols = np.zeros((numCatagories * numSubcatagories, 3))
     for i, c in enumerate(ccolors):
