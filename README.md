@@ -24,7 +24,7 @@ Peter K. Sorger<sup>1,2,3,#</sup></h5>
 <sup>5</sup>Image and Data Analysis Core, Harvard Medical School, Boston, MA<br>
 <sup>6</sup>Department of Pathology, Brigham and Women’s Hospital, Harvard Medical School, Boston, MA<br>
 \*Co-first Authors: G.J.B., E.N.<br>
-\*Corresponding Authors: gregory_baker2@hms.harvard.edu (G.J.B.), peter_sorger@hms.harvard.edu (P.K.S)<br>
+\#Corresponding Authors: gregory_baker2@hms.harvard.edu (G.J.B.), peter_sorger@hms.harvard.edu (P.K.S)<br>
 
 <!-- *Nature Cancer (2023). DOI: [10.1038/s43018-023-00576-1](https://doi.org/10.1038/s43018-023-00576-1)* -->
 
