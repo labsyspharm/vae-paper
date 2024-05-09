@@ -36,6 +36,22 @@ The Python code (i.e., Jupyter Notebooks) in this GitHub repository was used to 
 
 <!-- [Click to read preprint](https://doi.org/10.1101/2023.11.01.565120) [[1]](#1) -->
 
+## Running the computational notebook
+The Python code (i.e., Jupyter Notebooks) in this GitHub repository was used to generate figures in the paper. To run the code, first clone this repo onto your computer. Then download the required [input data files](https://www.synapse.org/#!Synapse:syn24193163/files/) from the Sage Bionetworks Synpase data repository into the top level of the cloned repo. Next, change directories into the top level of the cloned repo and create and activate a dedicated Conda environment with the necessary Python libraries by running the following commands:
+
+```bash
+cd <path/to/this/repo>
+conda env create -f environment.yml
+conda activate vae-paper
+
+```
+
+Run the computational notebook in JupyterLab with this command:
+```bash
+jupyter lab
+
+```
+
 ---
 
 

@@ -21,6 +21,7 @@ import matplotlib.gridspec as gridspec
 from matplotlib.colors import Normalize
 
 from skimage.color import gray2rgb
+from skimage.util.dtype import img_as_float
 
 from scipy.fft import fft2
 from scipy.stats import binned_statistic
@@ -60,6 +61,7 @@ def log_transform(img_batch):
 def clip_outlier_pixels(img_batch, percentile_cutoffs):
     """Clip lower and upper percentile outliers to 0 or 1, respectively
     based on pixel intensities of whole image."""
+    
     pc = np.array(list(percentile_cutoffs.values()), np.float32)
     pc_min = pc[:, 0]
     pc_max = pc[:, 1]
@@ -68,17 +70,81 @@ def clip_outlier_pixels(img_batch, percentile_cutoffs):
     return img_batch
 
 
-def compute_vignette_mask(img_batch, kernel_size=40):
-    """Compute a 2D Gaussian-distributed vignette mask to apply to image patches."""
-    kernel_y = cv2.getGaussianKernel(img_batch.shape[1], kernel_size).astype('float32') 
-    kernel_x = cv2.getGaussianKernel(img_batch.shape[2], kernel_size).astype('float32') 
-    kernel = kernel_y * kernel_x.T
-
-    # normalize kernel to be between 0 and 1
-    mask = cv2.normalize(kernel, None, 0, 1, cv2.NORM_MINMAX)
-    mask = mask[np.newaxis, :, :, np.newaxis]  # adding a third dimension to mask (i.e. X, X, 1)
+def compute_vignette_mask2(img_batch, std_dev):
+    window_size = img_batch.shape[1]
+    kernel = cv2.getGaussianKernel(window_size, std_dev).astype('float32')
+    mask = (kernel * kernel.T)  
+    mask = cv2.normalize(mask, None, 0, 1, cv2.NORM_MINMAX)
+    mask = mask[np.newaxis, :, :, np.newaxis] 
 
     return mask
+
+    # add additional dimensions to mask to match img_batch (i.e. cell, X, Y, channel)
+    mask = mask[np.newaxis, :, :, np.newaxis] 
+
+def compute_vignette_mask(img_batch, std_dev):
+    """Compute a 2D Gaussian-distributed vignette mask to apply to image patches."""
+
+    window_size = img_batch.shape[1]
+    
+    # create a range spanning 3 STDs below and above a mean value of zero
+    x = np.linspace(0 - 3 * std_dev, 0 + 3 * std_dev, 100)  
+    
+    # find the number of intervals (pixels) needed to account for 3 STDs below and above the mean
+    num_pixels = int(x.max() - x.min())
+    
+    # ensure num_pixels is odd so there are an equal number of pixels
+    # to the left/right, top-bottom of center pixel after cropping the mask
+    if num_pixels % 2 == 1:
+        pass  # number is already odd
+    else:
+        num_pixels + 1
+
+    # create Gaussian kernel
+    if num_pixels > window_size:
+        kernel = cv2.getGaussianKernel(num_pixels, std_dev).astype('float32')
+    else:
+        kernel = cv2.getGaussianKernel(window_size, std_dev).astype('float32')
+    
+    # create 2D mask
+    mask = (kernel * kernel.T)  
+    
+    # normalize mask pixel values 0-1
+    mask = cv2.normalize(mask, None, 0, 1, cv2.NORM_MINMAX)
+
+    # add additional dimensions to mask to match img_batch (i.e. cell, X, Y, channel)
+    mask = mask[np.newaxis, :, :, np.newaxis] 
+    
+    # store min and max intensity values before mask is cropped for later visualization
+    vmin = mask.min()
+    vmax = mask.max()
+    
+    def crop_vignette_mask(mask, window_size):
+    
+        # determine the center of the larger mask
+        center = np.array(mask.shape) // 2
+        
+        # calculate half-size
+        half_size = window_size // 2
+        
+        # define the range of indices for cropping
+        start_x = max(0, center[1] - half_size)
+        end_x = min(mask.shape[1], center[1] + half_size)
+        start_y = max(0, center[2] - half_size)
+        end_y = min(mask.shape[2], center[2] + half_size)
+        
+        # crop the larger array into the smaller mask
+        cropped_mask = mask[:, start_x:end_x, start_y:end_y, :]
+
+        # return the smaller mask
+        return cropped_mask
+    
+    if num_pixels > window_size:
+
+        # crop the mask to desired cellcutter window size
+        mask = crop_vignette_mask(mask=mask, window_size=window_size)
+    
+    return mask, vmin, vmax
 
 
 def reverse_processing(percentile_cutoffs, channel_slice, channel_name, contrast_limits):
@@ -101,42 +167,44 @@ def reverse_processing(percentile_cutoffs, channel_slice, channel_name, contrast
     # upper = np.rint(10**upper_cutoff_log)
     # channel_slice = (channel_slice-lower) / (upper-lower)
 
-    # Normalize pixel values between lower and upper contrast settings
+    # Apply image contrast settings
     lower = contrast_limits[channel_name][0]
     upper = contrast_limits[channel_name][1]
     channel_slice = (channel_slice - lower) / (upper - lower)
 
+    channel_slice = np.clip(channel_slice, 0, 1)
+    
     return channel_slice
 
 
-def jaccard_index(set1, set2):
-    """Function to calculate Jaccard Index between two sets"""
-    intersection = len(set(set1).intersection(set2))
-    union = len(set(set1).union(set2))
-    return intersection / union if union != 0 else 0
+# def jaccard_index(set1, set2):
+#     """Function to calculate Jaccard Index between two sets"""
+#     intersection = len(set(set1).intersection(set2))
+#     union = len(set(set1).union(set2))
+#     return intersection / union if union != 0 else 0
 
 
-def kl_divergence(p, q):
-    p = np.asarray(p)
-    q = np.asarray(q)
-    filt = np.logical_and(p != 0, q != 0)
-    return np.sum(p[filt] * np.log2(p[filt] / q[filt]))
+# def kl_divergence(p, q):
+#     p = np.asarray(p)
+#     q = np.asarray(q)
+#     filt = np.logical_and(p != 0, q != 0)
+#     return np.sum(p[filt] * np.log2(p[filt] / q[filt]))
 
 
-def u_stats(df, metric, cluster_select, expressed_channels, markers, combo_name):
+def u_stats(df, metric, cluster_select, channels, combo_label):
     """Compute Mann-Whitney U-test between similarity
        metrics of two clusters."""
 
     stats = pd.DataFrame()
-    for ch in expressed_channels.keys():
+    for e, marker in enumerate(channels.keys()):
 
-        channel_data = df[df['marker'] == cluster_select[markers[ch]] + ', ' + markers[ch]]
+        channel_data = df[df['marker'] ==  cluster_select[marker] + ', ' + marker]
 
-        data1 = channel_data[metric][channel_data['cluster'] != combo_name].astype('float')
-        data2 = channel_data[metric][channel_data['cluster'] == combo_name].astype('float')
+        data1 = channel_data[metric][channel_data['cluster'] != combo_label].astype('float')
+        data2 = channel_data[metric][channel_data['cluster'] == combo_label].astype('float')
 
         # grab marker index for plotting
-        plot_ch = expressed_channels[ch][1]
+        plot_ch = e
 
         # compute Mann-Whitney U-test
         uval, pval = mannwhitneyu(
@@ -146,7 +214,7 @@ def u_stats(df, metric, cluster_select, expressed_channels, markers, combo_name)
 
         # append current stat to dataframe
         u_row = pd.DataFrame(
-            index=[markers[ch]], data=[[uval, pval, plot_ch]],
+            index=[channels[marker]], data=[[uval, pval, plot_ch]],
             columns=['u-stat', 'pval', 'plot_ch'])
         stats = pd.concat([stats, u_row], ignore_index=False)
     print(f'{metric} U-stats:')
@@ -156,70 +224,70 @@ def u_stats(df, metric, cluster_select, expressed_channels, markers, combo_name)
     return stats
 
 
-def hsd(df, metric):
-    """Compute one-way ANOVA and Tukey HSD stats between
-       three groups of cluster similarity metrics."""
+# def hsd(df, metric):
+#     """Compute one-way ANOVA and Tukey HSD stats between
+#        three groups of cluster similarity metrics."""
 
-    hsds = pd.DataFrame()
-    for ch in expressed_channels.keys():
-        clus1_data = df[metric][
-            (df['cluster'] == clus_pair[0]) & (df['marker'] == markers[ch])].astype('float')
-        clus2_data = df[metric][
-            (df['cluster'] == clus_pair[1]) & (df['marker'] == markers[ch])].astype('float')
-        combo_data = df[metric][
-            (df['cluster'] == combo_name) & (df['marker'] == markers[ch])].astype('float')
+#     hsds = pd.DataFrame()
+#     for ch in channels.keys():
+#         clus1_data = df[metric][
+#             (df['cluster'] == clus_pair[0]) & (df['marker'] == markers[ch])].astype('float')
+#         clus2_data = df[metric][
+#             (df['cluster'] == clus_pair[1]) & (df['marker'] == markers[ch])].astype('float')
+#         combo_data = df[metric][
+#             (df['cluster'] == combo_label) & (df['marker'] == markers[ch])].astype('float')
 
-        # compute one-way ANOVA
-        fval, pval = f_oneway(clus1_data, clus2_data, combo_data)
-        print(
-            f"{metric} F-test pval is {'%.2E' % Decimal(pval)} for {markers[ch]}")
+#         # compute one-way ANOVA
+#         fval, pval = f_oneway(clus1_data, clus2_data, combo_data)
+#         print(
+#             f"{metric} F-test pval is {'%.2E' % Decimal(pval)} for {markers[ch]}")
 
-        if pval <= 0.05:
-            # perform multiple pairwise comparisons (Tukey's HSD)
-            # and store in df
-            res = tukey_hsd(list(clus1_data), list(clus2_data), list(combo_data))
-            res_df = pd.DataFrame(
-                index=[clus_pair[0], clus_pair[1], combo_name],
-                columns=[clus_pair[0], clus_pair[1], combo_name],
-                data=res.pvalue)
-            hsd = (
-                res_df
-                .mask(np.tril(np.ones(res_df.shape)).astype(bool))
-                .stack()
-                .reset_index()
-                .rename(columns={0: 'pval'})
-            )
-            hsd['comparison'] = hsd['level_0'].astype(str) + '/' + hsd['level_1'].astype(str)
-            hsd.drop(columns=['level_0', 'level_1'], inplace=True)
-            hsd['marker'] = expressed_channels[ch][0]
-            hsd['plot_ch'] = expressed_channels[ch][1]
-            hsds = pd.concat([hsds, hsd], ignore_index=False)
-    hsds.reset_index(drop=True, inplace=True)
-    print()
-    print(f'{metric} HSD-stats:')
-    print(hsds)
+#         if pval <= 0.05:
+#             # perform multiple pairwise comparisons (Tukey's HSD)
+#             # and store in df
+#             res = tukey_hsd(list(clus1_data), list(clus2_data), list(combo_data))
+#             res_df = pd.DataFrame(
+#                 index=[clus_pair[0], clus_pair[1], combo_label],
+#                 columns=[clus_pair[0], clus_pair[1], combo_label],
+#                 data=res.pvalue)
+#             hsd = (
+#                 res_df
+#                 .mask(np.tril(np.ones(res_df.shape)).astype(bool))
+#                 .stack()
+#                 .reset_index()
+#                 .rename(columns={0: 'pval'})
+#             )
+#             hsd['comparison'] = hsd['level_0'].astype(str) + '/' + hsd['level_1'].astype(str)
+#             hsd.drop(columns=['level_0', 'level_1'], inplace=True)
+#             hsd['marker'] = channels[ch][0]
+#             hsd['plot_ch'] = channels[ch][1]
+#             hsds = pd.concat([hsds, hsd], ignore_index=False)
+#     hsds.reset_index(drop=True, inplace=True)
+#     print()
+#     print(f'{metric} HSD-stats:')
+#     print(hsds)
 
-    return hsds
+#     return hsds
 
 
-def compare_clusters(clus1_name, clus1, clus2_name, clus2, metric, expressed_channels, markers, X_combo, combo_name, save_dir, window_size):
+def compare_clusters(clus1_name, clus2_name, clus1_idxs, clus2_idxs, metric, channels, X_combo, combo_label, save_dir, window_size):
     """Compute similarity metrics for two clusters of image patches."""
 
     print()
     cluster_select = {}
-    df = pd.DataFrame(columns=['cluster', 'marker', metric])
-    for ch in expressed_channels.keys():
-        channel_df = pd.DataFrame(columns=['cluster', 'marker', metric])
-        for clus, clus_ids in zip([clus1_name, clus2_name], [clus1, clus2]):
+    df = pd.DataFrame(columns=['cluster', 'channel', 'marker', metric])
+    for marker in channels.keys():
+        marker_df = pd.DataFrame(columns=['cluster', 'channel', 'marker', metric])
+        for clus, clus_ids in zip([clus1_name, clus2_name], [clus1_idxs, clus2_idxs]):
             print(
-                f'Computing {metric} for Cluster: {clus}, Channel: {markers[ch]}'
+                f'Computing {metric} for Cluster: {clus}, Channel: {marker}'
             )
-            cluster_df = pd.DataFrame(columns=['cluster', 'marker', metric])
+            cluster_df = pd.DataFrame(columns=['cluster', 'channel', 'marker', metric])
             measurements_within = []
             for combo in tqdm(
                     combinations(clus_ids, 2), total=len(list(combinations(clus_ids, 2)))):
-                img1 = X_combo[combo[0], :, :, ch]
-                img2 = X_combo[combo[1], :, :, ch]
+                img1 = X_combo[combo[0], :, :, channels[marker]]
+                img2 = X_combo[combo[1], :, :, channels[marker]]
                 img1 = (
                     (img1 - np.min(img1)) / (np.max(img1) - np.min(img1)).astype('float32')
                 )
@@ -268,31 +336,32 @@ def compare_clusters(clus1_name, clus1, clus2_name, clus2, metric, expressed_cha
 
             cluster_df[metric] = measurements_within
             cluster_df['cluster'] = clus
-            cluster_df['marker'] = markers[ch]
-            cluster_df['channel'] = ch
-            channel_df = pd.concat([channel_df, cluster_df], axis=0)
+            cluster_df['channel'] = channels[marker]
+            cluster_df['marker'] = marker
+
+            marker_df = pd.concat([marker_df, cluster_df], axis=0)
 
         # select cluster with smaller median
-        clus1_data = channel_df[metric][
-            (channel_df['cluster'] == clus1_name) &
-            (channel_df['marker'] == markers[ch])
+        clus1_data = marker_df[metric][
+            (marker_df['cluster'] == clus1_name) &
+            (marker_df['marker'] == marker)
         ].astype('float')
-        clus2_data = channel_df[metric][
-            (channel_df['cluster'] == clus2_name) &
-            (channel_df['marker'] == markers[ch])
+        clus2_data = marker_df[metric][
+            (marker_df['cluster'] == clus2_name) &
+            (marker_df['marker'] == marker)
         ].astype('float')
 
-        mean1 = np.median(clus1_data)
-        mean2 = np.median(clus2_data)
+        median1 = np.median(clus1_data)
+        median2 = np.median(clus2_data)
 
-        if mean1 <= mean2:
-            channel_df = channel_df[channel_df['cluster'] == clus1_name]
-            channel_df['marker'] = str(clus1_name) + ', ' + markers[ch]
-            cluster_select[markers[ch]] = str(clus1_name)
+        if median1 <= median2:
+            marker_df = marker_df[marker_df['cluster'] == clus1_name]
+            marker_df['marker'] = str(clus1_name) + ', ' + marker
+            cluster_select[marker] = str(clus1_name)
         else:
-            channel_df = channel_df[channel_df['cluster'] == clus2_name]
-            channel_df['marker'] = str(clus2_name) + ', ' + markers[ch]
-            cluster_select[markers[ch]] = str(clus2_name)
+            marker_df = marker_df[marker_df['cluster'] == clus2_name]
+            marker_df['marker'] = str(clus2_name) + ', ' + marker
+            cluster_select[marker] = str(clus2_name)
 
         # select cluster with smaller SD
         # lower = np.percentile(clus1_data, 5.0)
@@ -304,40 +373,40 @@ def compare_clusters(clus1_name, clus1, clus2_name, clus2, metric, expressed_cha
         # std2 = tstd(clus2_data, limits=(lower, upper))
 
         # if std1 <= std2:
-        #     channel_df = channel_df[channel_df['cluster'] == clus1_name]
-        #     channel_df['marker'] = str(clus1_name) + ', ' + markers[ch]
-        #     cluster_select[markers[ch]] = str(clus1_name)
+        #     marker_df = marker_df[marker_df['cluster'] == clus1_name]
+        #     marker_df['marker'] = str(clus1_name) + ', ' + marker
+        #     cluster_select[marker] = str(clus1_name)
         # else:
-        #     channel_df = channel_df[channel_df['cluster'] == clus2_name]
-        #     channel_df['marker'] = str(clus2_name) + ', ' + markers[ch]
-        #     cluster_select[markers[ch]] = str(clus2_name)
+        #     marker_df = marker_df[marker_df['cluster'] == clus2_name]
+        #     marker_df['marker'] = str(clus2_name) + ', ' + marker
+        #     cluster_select[marker] = str(clus2_name)
 
-        df = pd.concat([df, channel_df], axis=0)
+        df = pd.concat([df, marker_df], axis=0)
         print()
 
     sq_err = {}
-    for ch in expressed_channels.keys():
+    for marker in channels.keys():
         print(
-            f'Computing {metric} across clusters {combo_name} for '
-            f'channel: {markers[ch]}')
+            f'Computing {metric} across clusters {combo_label} for '
+            f'channel: {marker}')
 
         z1 = zarr.open(
             os.path.join(save_dir, 'error1.zarr'), mode='w',
-            shape=(window_size, window_size, len(clus1) * len(clus2)),
+            shape=(window_size, window_size, len(clus1_idxs) * len(clus2_idxs)),
             chunks=(window_size, window_size, 200), dtype='float32'
         )
         z2 = zarr.open(
             os.path.join(save_dir, 'error2.zarr'), mode='w',
-            shape=(window_size, window_size, len(clus1) * len(clus2)),
+            shape=(window_size, window_size, len(clus1_idxs) * len(clus2_idxs)),
             chunks=(window_size, window_size, 200), dtype='float32'
         )
-        temp_df = pd.DataFrame(columns=['cluster', 'marker', metric])
+        temp_df = pd.DataFrame(columns=['cluster', 'channel', 'marker', metric])
         measurements_across = []
         err_counter = 0
-        for i in tqdm(clus1):
-            for j in clus2:
-                img1 = X_combo[i, :, :, ch]
-                img2 = X_combo[j, :, :, ch]
+        for i in tqdm(clus1_idxs):
+            for j in clus2_idxs:
+                img1 = X_combo[i, :, :, channels[marker]]
+                img2 = X_combo[j, :, :, channels[marker]]
 
                 img1 = (
                     (img1 - np.min(img1)) / (np.max(img1) - np.min(img1)).astype('float32')
@@ -401,12 +470,13 @@ def compare_clusters(clus1_name, clus1, clus2_name, clus2, metric, expressed_cha
                     measurements_across.append(mse)
 
         temp_df[metric] = measurements_across
-        temp_df['cluster'] = combo_name
-        temp_df['marker'] = cluster_select[markers[ch]] + ', ' + markers[ch]
-        temp_df['channel'] = ch
+        temp_df['cluster'] = combo_label
+        temp_df['channel'] = channels[marker]
+        temp_df['marker'] = cluster_select[marker] + ', ' + marker
+        
         df = pd.concat([df, temp_df], axis=0)
 
-        sq_err[markers[ch]] = (np.mean(z1, axis=2), np.mean(z2, axis=2))
+        sq_err[marker] = (np.mean(z1, axis=2), np.mean(z2, axis=2))
 
         shutil.rmtree(os.path.join(save_dir, 'error1.zarr'))
         shutil.rmtree(os.path.join(save_dir, 'error2.zarr'))
@@ -415,10 +485,10 @@ def compare_clusters(clus1_name, clus1, clus2_name, clus2, metric, expressed_cha
     return df, cluster_select, sq_err
 
 
-def plot(df, metric, stats, sq_err, combo_name, clus_pair, save_dir):
+def plot(df, metric, stats, sq_err, combo_label, clus_pair, save_dir):
     """Plot similarity metric data."""
 
-    df['cluster'] = ['ref.' if i != combo_name else i for i in df['cluster']]
+    df['cluster'] = ['ref.' if i != combo_label else i for i in df['cluster']]
     df['cluster'] = df['cluster'].astype('str')
 
     g = sns.catplot(
@@ -734,30 +804,30 @@ def single_channel_pyramid(tiff_path, channel):
         return pyramid, vmin, vmax
 
 
-def read_markers(markers_filepath, markers_to_exclude, data):
-    markers = pd.read_csv(markers_filepath, dtype={0: 'int16', 1: 'int16', 2: 'str'}, comment='#')
-    if data is None:
-        markers_to_include = [
-            i for i in markers['marker_name']
-            if i not in markers_to_exclude
-        ]
-    else:
-        markers_to_include = [
-            i for i in markers['marker_name']
-            if i not in markers_to_exclude if i in data.columns
-        ]
+# def read_markers(markers_filepath, markers_to_exclude, data):
+#     markers = pd.read_csv(markers_filepath, dtype={0: 'int16', 1: 'int16', 2: 'str'}, comment='#')
+#     if data is None:
+#         markers_to_include = [
+#             i for i in markers['marker_name']
+#             if i not in markers_to_exclude
+#         ]
+#     else:
+#         markers_to_include = [
+#             i for i in markers['marker_name']
+#             if i not in markers_to_exclude if i in data.columns
+#         ]
 
-    markers = markers[markers['marker_name'].isin(markers_to_include)]
+#     markers = markers[markers['marker_name'].isin(markers_to_include)]
 
-    dna1 = markers['marker_name'][markers['channel_number'] == 1][0]
-    dna_moniker = str(re.search(r'[^\W\d]+', dna1).group())
+#     dna1 = markers['marker_name'][markers['channel_number'] == 1][0]
+#     dna_moniker = str(re.search(r'[^\W\d]+', dna1).group())
 
-    # abx channels
-    abx_channels = [
-        i for i in markers['marker_name'] if dna_moniker not in i
-    ]
+#     # abx channels
+#     abx_channels = [
+#         i for i in markers['marker_name'] if dna_moniker not in i
+#     ]
 
-    return markers, dna1, dna_moniker, abx_channels
+#     return markers, dna1, dna_moniker, abx_channels
 
 
 def categorical_cmap(numUniqueSamples, numCatagories, cmap='tab10', continuous=False):
@@ -822,16 +892,16 @@ def makeColors(vals):
     return colors
 
 
-def PlotReconstructedImages(orig_input_dims, percentile_cutoffs, contrast_limits, decoder, X, X_seg, X_encoded, y, numColumns, channel_color_dict, intensity_multiplier, thumbnail_font_size, filename, save_dir, mask, undo_mask):
+def PlotReconstructedImages(orig_input_dims, percentile_cutoffs, contrast_limits, decoder, X_transformed, X_seg, X_encoded, y, numColumns, channel_color_dict, intensity_multiplier, thumbnail_font_size, filename, save_dir, mask, masked_model):
 
-    numSamples = len(X)
+    numSamples = len(X_transformed)
     numRows = ceil(numSamples / numColumns)
     grid_dims = (numRows, numColumns)
 
-    fig = plt.figure()
+    fig = plt.figure(figsize=(5, 3))
 
     outer_grid_rows = 1
-    outer_grid_cols = 2
+    outer_grid_cols = 3
 
     outer = gridspec.GridSpec(outer_grid_rows, outer_grid_cols, wspace=0.1, hspace=0.0)
 
@@ -839,19 +909,25 @@ def PlotReconstructedImages(orig_input_dims, percentile_cutoffs, contrast_limits
 
         inner = gridspec.GridSpecFromSubplotSpec(
             grid_dims[0], grid_dims[1],
-            subplot_spec=outer[panel], wspace=0.1, hspace=0.0)
+            subplot_spec=outer[panel], wspace=0.1, hspace=-0.6)
         
         if panel == 0:
             ax = plt.Subplot(fig, outer[panel])
-            ax.set_title('Input Images', fontsize=7)
+            ax.text(0.5, 0.935, 'Original', fontsize=4.0, ha='center', va='center')
+        
         elif panel == 1:
             ax = plt.Subplot(fig, outer[panel])
-            ax.set_title('Learned Representations', fontsize=7)
+            ax.text(0.5, 0.935, 'Model Input', fontsize=4.0, ha='center', va='center')
+
+        elif panel == 2:
+            ax = plt.Subplot(fig, outer[panel])
+            ax.text(0.5, 0.935, 'Learned Representations', fontsize=4.0, ha='center', va='center')
         
         ax.axis('off')
         fig.add_subplot(ax)
         
-        for e, (trans, encode, label, seg) in enumerate(zip(X, X_encoded, y.items(), X_seg)):
+        for e, (transformed, encode, label, seg) in enumerate(zip(
+            X_transformed, X_encoded, y.items(), X_seg)):
 
             ax = plt.Subplot(fig, inner[e])
             ax.set_xticks([])
@@ -872,27 +948,28 @@ def PlotReconstructedImages(orig_input_dims, percentile_cutoffs, contrast_limits
             # convert segmentation thumbnail to RGB
             # and add to blank image
             seg_slice = gray2rgb(seg_slice) * 0.25  # decrease alpha
-
+            
             if panel == 0:
-                
-                if undo_mask:  # undo vignette mask
+               
+                if masked_model:  # undo vignette mask
+
                     # mask function is designed to be applied to all cells in a batch during model
                     # training. Slicing first dimension in this case to apply to a single patch.
-                    trans /= mask[0, :, :, :]
+                    transformed /= mask[0, :, :, :]
                 
-                overlay = np.zeros((trans.shape[0], trans.shape[1]))
+                overlay = np.zeros((transformed.shape[0], transformed.shape[1]))
 
                 # add centroid point at the center of the image
                 overlay[
-                    int(trans.shape[0] / 2):int(trans.shape[0] / 2) + 1,
-                    int(trans.shape[1] / 2):int(trans.shape[1] / 2) + 1
+                    int(transformed.shape[0] / 2):int(transformed.shape[0] / 2) + 1,
+                    int(transformed.shape[1] / 2):int(transformed.shape[1] / 2) + 1
                 ] = 1
 
                 overlay = gray2rgb(overlay)
 
                 for name, (ch, color) in channel_color_dict.items():
     
-                    channel_slice = trans[:, :, ch]
+                    channel_slice = transformed[:, :, ch]
 
                     channel_slice = reverse_processing(
                         percentile_cutoffs, channel_slice, name, contrast_limits
@@ -905,8 +982,42 @@ def PlotReconstructedImages(orig_input_dims, percentile_cutoffs, contrast_limits
                     overlay += channel_slice.compute() * to_rgb(color)
 
                 overlay += seg_slice.compute()
-
+            
             elif panel == 1:
+                
+                # if masked_model and undo_mask:  # undo vignette mask
+                    
+                    # mask function is designed to be applied to all cells in a batch during model
+                    # training. Slicing first dimension in this case to apply to a single patch.
+                    # transformed /= mask[0, :, :, :]
+
+                overlay = np.zeros((transformed.shape[0], transformed.shape[1]))
+
+                # add centroid point at the center of the image
+                # overlay[
+                #     int(transformed.shape[0] / 2):int(transformed.shape[0] / 2) + 1,
+                #     int(transformed.shape[1] / 2):int(transformed.shape[1] / 2) + 1
+                # ] = 1
+
+                overlay = gray2rgb(overlay)
+
+                for name, (ch, color) in channel_color_dict.items():
+    
+                    channel_slice = transformed[:, :, ch]
+
+                    channel_slice = reverse_processing(
+                        percentile_cutoffs, channel_slice, name, contrast_limits
+                    )
+
+                    channel_slice = gray2rgb(channel_slice)
+
+                    channel_slice = channel_slice * intensity_multiplier
+                     
+                    overlay += channel_slice.compute() * to_rgb(color)
+
+                # overlay += seg_slice.compute()
+
+            elif panel == 2:
 
                 z_sample = np.array([encode])
 
@@ -918,12 +1029,12 @@ def PlotReconstructedImages(orig_input_dims, percentile_cutoffs, contrast_limits
                 overlay = np.zeros((reconstructed_img.shape[0], reconstructed_img.shape[1]))
 
                 # add centroid point at the center of the image
-                overlay[
-                    int(reconstructed_img.shape[0] / 2):int(
-                        reconstructed_img.shape[0] / 2) + 1,
-                    int(reconstructed_img.shape[1] / 2):int(
-                        reconstructed_img.shape[1] / 2) + 1
-                ] = 1
+                # overlay[
+                #     int(reconstructed_img.shape[0] / 2):int(
+                #         reconstructed_img.shape[0] / 2) + 1,
+                #     int(reconstructed_img.shape[1] / 2):int(
+                #         reconstructed_img.shape[1] / 2) + 1
+                # ] = 1
 
                 overlay = gray2rgb(overlay)
 
@@ -941,23 +1052,25 @@ def PlotReconstructedImages(orig_input_dims, percentile_cutoffs, contrast_limits
 
                     overlay += channel_slice * to_rgb(color)
 
-                overlay += seg_slice.compute()
-            
+                # overlay += seg_slice.compute()
+                
             overlay = np.clip(overlay, 0, 1)  # avoiding matplotlib warning about clipping
-            ax.imshow(overlay, cmap=plt.cm.binary)
+            ax.imshow(overlay)
 
             fig.add_subplot(ax)
+            plt.xlabel(label[0], size=2, labelpad=1.5)
 
-    fig.suptitle(filename, x=0.0, y=1.03, ha='left', va='center', size=9)
-    fig.subplots_adjust(bottom=0.01, top=0.94, left=0.01, right=0.85, wspace=0.2, hspace=0.1)
+    fig.suptitle(filename, x=0.1, y=0.98, ha='center', va='center', size=4.5)
+    
+    plt.subplots_adjust(left=0.04, right=0.89, bottom=-0.05, top=1.01)
     
     legend_elements = []
     for name, (ch, color) in channel_color_dict.items():
-        legend_elements.append(Line2D([0], [0], color=color, lw=3, label=name))
+        legend_elements.append(Line2D([0], [0], color=color, lw=2.0, label=name))
 
     fig.legend(
-        handles=legend_elements, prop={'size': 5}, bbox_to_anchor=(0.98, 0.93))
+        handles=legend_elements, prop={'size': 2.5}, bbox_to_anchor=(0.99, 0.925), frameon=False)
 
-    plt.savefig(os.path.join(save_dir, f'{filename}.png'), dpi=800, bbox_inches='tight')
+    plt.savefig(os.path.join(save_dir, f'{filename}.png'), dpi=800)
     plt.show()
     plt.close('all')

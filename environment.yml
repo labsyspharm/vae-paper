@@ -1,0 +1,25 @@
+name: paper-test
+channels:
+  - conda-forge
+dependencies:
+  - python=3
+  - jupyterlab
+  - yaml
+  - natsort
+  - ipython
+  - ipywidgets
+  - numpy
+  - pandas
+  - scipy
+  - scikit-image
+  - opencv
+  - pillow
+  - seaborn
+  - matplotlib
+  - zarr
+  - dask
+  - napari
+  - pyqt
+  - tifffile
+  - keras
+  - tensorflow
