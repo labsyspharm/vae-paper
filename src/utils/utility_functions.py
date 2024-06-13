@@ -190,6 +190,11 @@ def reverse_processing(percentile_cutoffs, channel_slice, channel_name, contrast
 #     filt = np.logical_and(p != 0, q != 0)
 #     return np.sum(p[filt] * np.log2(p[filt] / q[filt]))
 
+def jaccard_index(set1, set2):
+    """Function to calculate Jaccard Index between two sets"""
+    intersection = len(set(set1).intersection(set2))
+    union = len(set(set1).union(set2))
+    return intersection / union if union != 0 else 0
 
 def u_stats(df, metric, cluster_select, channels, combo_label):
     """Compute Mann-Whitney U-test between similarity
