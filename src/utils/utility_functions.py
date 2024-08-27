@@ -70,22 +70,8 @@ def clip_outlier_pixels(img_batch, percentile_cutoffs):
     return img_batch
 
 
-def compute_vignette_mask2(img_batch, std_dev):
-    window_size = img_batch.shape[1]
-    kernel = cv2.getGaussianKernel(window_size, std_dev).astype('float32')
-    mask = (kernel * kernel.T)  
-    mask = cv2.normalize(mask, None, 0, 1, cv2.NORM_MINMAX)
-    mask = mask[np.newaxis, :, :, np.newaxis] 
-
-    return mask
-
-    # add additional dimensions to mask to match img_batch (i.e. cell, X, Y, channel)
-    mask = mask[np.newaxis, :, :, np.newaxis] 
-
-def compute_vignette_mask(img_batch, std_dev):
+def compute_vignette_mask(window_size, std_dev):
     """Compute a 2D Gaussian-distributed vignette mask to apply to image patches."""
-
-    window_size = img_batch.shape[1]
     
     # create a range spanning 3 STDs below and above a mean value of zero
     x = np.linspace(0 - 3 * std_dev, 0 + 3 * std_dev, 100)  
@@ -145,6 +131,7 @@ def compute_vignette_mask(img_batch, std_dev):
         mask = crop_vignette_mask(mask=mask, window_size=window_size)
     
     return mask, vmin, vmax
+
 
 
 def reverse_processing(percentile_cutoffs, channel_slice, channel_name, contrast_limits):
