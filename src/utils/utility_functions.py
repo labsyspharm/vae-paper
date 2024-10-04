@@ -752,8 +752,8 @@ def single_channel_pyramid(tiff_path, channel):
 
             pyramid = [da.from_zarr(z) for z in pyramid]
 
-            min_val = pyramid[0].min()
-            max_val = pyramid[0].max()
+            min_val = pyramid[-1].min()
+            max_val = pyramid[-1].max()
             vmin, vmax = da.compute(min_val, max_val)
 
         else:
@@ -764,8 +764,8 @@ def single_channel_pyramid(tiff_path, channel):
 
             pyramid = [da.from_array(z) for z in pyramid]
 
-            min_val = pyramid[0].min()
-            max_val = pyramid[0].max()
+            min_val = pyramid[-1].min()
+            max_val = pyramid[-1].max()
             vmin, vmax = da.compute(min_val, max_val)
 
         return pyramid, vmin, vmax
