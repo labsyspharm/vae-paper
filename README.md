@@ -18,14 +18,14 @@ Hanspeter Pfister<sup>4</sup>,
 Artem Sokolov<sup>1,7</sup>,
 Peter K. Sorger<sup>1,2,3,#</sup></h5>
 
-<sup>1</sup>Laboratory of Systems Pharmacology, Harvard Medical School, Boston, MA 
+<sup>1</sup>Laboratory of Systems Pharmacology, Harvard Medical School, Boston, MA
 <sup>2</sup>Ludwig Center for Cancer Research at Harvard, Harvard Medical School, Boston, MA
 <sup>3</sup>Department of Systems Biology, Harvard Medical School, Boston, MA
 <sup>4</sup>Harvard John A. Paulson School of Engineering and Applied Sciences, Harvard University, Cambridge, MA
 <sup>5</sup>Department of Pathology, Brigham and Women’s Hospital, Harvard Medical School, Boston, MA
 
 \*Co-first Authors: G.J.B., E.N.<br>
-\#Corresponding Authors: gregory_baker2@hms.harvard.edu (G.J.B.), peter_sorger@hms.harvard.edu (P.K.S)<br>
+\#Corresponding Authors: gregory_baker2@hms.harvard.edu (G.J.B.), peter_sorger@hms.harvard.edu (P.K.S.)<br>
 
 <!-- *Nature Cancer (2023). DOI: [10.1038/s43018-023-00576-1](https://doi.org/10.1038/s43018-023-00576-1)* -->
 
@@ -39,7 +39,7 @@ Alterations in tissue organization and morphology are critical biomarkers of dis
 The Python code in this GitHub repository is organized in Jupyter Notebooks and used to generate figures shown in the paper. To run the code, first clone this repo onto your computer. Then download the required [input data](https://www.synapse.org/#!Synapse:syn24193163/files/) from the Sage Bionetworks Synpase data repository dedicated to the MORPHӔUS project into the top level of the cloned repo. Change directories into the top level of the cloned repo and create and activate a dedicated Conda environment with the necessary Python libraries for running the code by entering the following commands:
 
 ```bash
-cd <path/to/this/repo>
+cd <path/to/cloned/repo>
 conda env create -f environment.yml
 conda activate vae-paper
 
