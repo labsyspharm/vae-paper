@@ -3,12 +3,13 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 
-# Computational Notebook for "Segmentation-free Characterization of Cell Types and Microscale Tissue Assemblies in Human Colorectal Cancer with Variational Autoencoders"
+# Computational Notebooks for "MORPHӔUS: Generative AI for Morphology-Aware Profiling of Human Cancer"
 
 <h5>Gregory J. Baker<sup>1,2,3,*,#</sup>,    
 Edward Novikov<sup>1,4,*</sup>,
 Yu-An Chen<sup>1,2</sup>,
 Clemens B. Hug<sup>1</sup>,
+Zergham Ahmed<sup>1,4</sup>, 
 Sebastián A. Cajas Ordóñez<sup>4</sup>,
 Siyu Huang<sup>4</sup>,
 Clarence Yapp<sup>1,5</sup>,
@@ -17,12 +18,12 @@ Hanspeter Pfister<sup>4</sup>,
 Artem Sokolov<sup>1,7</sup>,
 Peter K. Sorger<sup>1,2,3,#</sup></h5>
 
-<sup>1</sup>Laboratory of Systems Pharmacology, Program in Therapeutic Science, Harvard Medical School, Boston, MA<br>
-<sup>2</sup>Ludwig Center for Cancer Research at Harvard, Harvard Medical School, Boston, MA<br>
-<sup>3</sup>Department of Systems Biology, Harvard Medical School, Boston, MA<br>
-<sup>4</sup>Harvard John A. Paulson School of Engineering and Applied Sciences, Harvard University, Cambridge, MA<br>
-<sup>5</sup>Image and Data Analysis Core, Harvard Medical School, Boston, MA<br>
-<sup>6</sup>Department of Pathology, Brigham and Women’s Hospital, Harvard Medical School, Boston, MA<br>
+<sup>1</sup>Laboratory of Systems Pharmacology, Harvard Medical School, Boston, MA 
+<sup>2</sup>Ludwig Center for Cancer Research at Harvard, Harvard Medical School, Boston, MA
+<sup>3</sup>Department of Systems Biology, Harvard Medical School, Boston, MA
+<sup>4</sup>Harvard John A. Paulson School of Engineering and Applied Sciences, Harvard University, Cambridge, MA
+<sup>5</sup>Department of Pathology, Brigham and Women’s Hospital, Harvard Medical School, Boston, MA
+
 \*Co-first Authors: G.J.B., E.N.<br>
 \#Corresponding Authors: gregory_baker2@hms.harvard.edu (G.J.B.), peter_sorger@hms.harvard.edu (P.K.S)<br>
 
@@ -30,14 +31,12 @@ Peter K. Sorger<sup>1,2,3,#</sup></h5>
 
 ## Abstract
 
-A detailed characterization of human tissue organization and understanding of how multiscale histological structures differ in response to disease and therapy can serve as important biomarkers of disease progression and therapeutic response. Although highly multiplex images of tissue contain detailed information on the abundance and distribution of proteins within and across cells, their analysis via segmentation-based methods captures little morphological information, is influenced by signal contamination across segmentation boundaries, and requires custom algorithms to study multi-cellular tissue architectures. Here we classify individual cell states and recurrent microscale tissue motifs in human colorectal adenocarcinoma by training a class of generative neural networks (variational autoencoders, VAEs) on multi-scale image patches derived from whole-slide imaging data. Our work demonstrates how unsupervised computer vision can be used to characterize cells and their higher-order structural assemblies in a manner that simultaneously accounts for protein abundance and spatial distribution while overcoming limitations of segmentation-based analysis.
-
-The Python code (i.e., Jupyter Notebooks) in this GitHub repository was used to generate the figures in the aforementioned study.
+Alterations in tissue organization and morphology are critical biomarkers of disease progression and therapeutic response. While immunofluorescence images provide information on protein abundance and spatial distribution within tissues, segmentation-based analysis methods fail to extract morphological detail, suffer from signal spillover across cell boundaries, and rely on custom algorithms to infer spatial relationships among segmented cells. Here we introduce MORPHӔUS, a spatial biology framework that classifies multiplex histology images at the pixel-level across arbitrary length scales using generative modeling with variational autoencoders (VAEs). When applied to human colorectal cancer, MORPHӔUS identifies biologically meaningful cell states, morphologies, cell-cell interactions, and composite tissue structures with greater accuracy than segmentation-based approaches while avoiding the problem of signal spillover. This fully unsupervised method requires no ground truth annotations and is agnostic to the number and nature of immunomarkers used, making it broadly applicable to a wide range of bioimaging applications.
 
 <!-- [Click to read preprint](https://doi.org/10.1101/2023.11.01.565120) [[1]](#1) -->
 
-## Running the computational notebook
-The Python code (i.e., Jupyter Notebooks) in this GitHub repository was used to generate figures in the paper. To run the code, first clone this repo onto your computer. Then download the required [input data files](https://www.synapse.org/#!Synapse:syn24193163/files/) from the Sage Bionetworks Synpase data repository into the top level of the cloned repo. Next, change directories into the top level of the cloned repo and create and activate a dedicated Conda environment with the necessary Python libraries by running the following commands:
+## Running the computational notebooks
+The Python code in this GitHub repository is organized in Jupyter Notebooks and used to generate figures shown in the paper. To run the code, first clone this repo onto your computer. Then download the required [input data](https://www.synapse.org/#!Synapse:syn24193163/files/) from the Sage Bionetworks Synpase data repository dedicated to the MORPHӔUS project into the top level of the cloned repo. Change directories into the top level of the cloned repo and create and activate a dedicated Conda environment with the necessary Python libraries for running the code by entering the following commands:
 
 ```bash
 cd <path/to/this/repo>
@@ -46,7 +45,7 @@ conda activate vae-paper
 
 ```
 
-Run the computational notebook in JupyterLab with this command:
+Open the computational notebooks in JupyterLab with the following command:
 ```bash
 jupyter lab
 
@@ -55,16 +54,16 @@ jupyter lab
 ---
 
 
-## VAE Source Code
+## MORPHӔUS Source Code
 
-Source code for the VAE analysis pipeline used in this study is freely-available and archived on [GitHub](https://github.com/labsyspharm/vae). 
+MORPHӔUS source code will be made freely-available upon the release of the paper and will be archived on [GitHub](https://github.com/labsyspharm/vae) and Zenodo.
 
 ---
 
 
 ## Data Availability
 
-New data associated with this paper is available at the [HTAN Data Portal](https://data.humantumoratlas.org). Input data required to run the source code found here is freely-available at [Sage Synapse](https://www.synapse.org/#!Synapse:syn53216852/files/)
+Image files associated with this paper were first generated as part of the Human Tumor Atlas Network (HTAN) project and are available at the [HTAN Data Portal](https://data.humantumoratlas.org). Input images required to run the source code found here is also freely-available at [Sage Synapse](https://www.synapse.org/#!Synapse:syn53216852/files/)
 
 
 ---
