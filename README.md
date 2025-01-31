@@ -36,7 +36,9 @@ Alterations in tissue organization and morphology are critical biomarkers of dis
 <!-- [Click to read preprint](https://doi.org/10.1101/2023.11.01.565120) [[1]](#1) -->
 
 ## Running the computational notebooks
-The Python code in this GitHub repository is organized in Jupyter Notebooks and used to generate figures shown in the paper. To run the code, first clone this repo onto your computer. Then download the required [input data](https://www.synapse.org/#!Synapse:syn24193163/files/) folder from the Sage Bionetworks Synpase data repository dedicated to the MORPHӔUS project into the `src` folder of the cloned repo. This folder also contains the full images and image patches used in the paper. Change directories into the top level of the cloned repo and create and activate a dedicated Conda environment with the necessary Python libraries for running the code by entering the following commands:
+If not already installed, download `conda` following the instructions provided [here](https://docs.anaconda.com/miniconda/). 
+
+The Python code in this GitHub repository is organized in Jupyter Notebooks and used to generate figures shown in the paper. To run the code, first clone this repo onto your computer. Then download the required [input](https://www.synapse.org/#!Synapse:syn24193163/files/) data folder from the Sage Bionetworks Synpase data repository dedicated to the MORPHӔUS project into the `src` folder of the cloned repo. This folder also contains the full images and image patches used in the paper. Change directories into the top level of the cloned repo and create and activate a dedicated Conda environment with the necessary Python libraries for running the code by entering the following commands:
 
 ```bash
 cd <path/to/cloned/repo>
@@ -45,7 +47,7 @@ conda activate morphaeus-paper
 
 ```
 
-Open the computational notebooks in JupyterLab with the following command:
+Next, change directories to the `src` folder and open the computational notebooks in JupyterLab with the following command:
 ```bash
 jupyter lab
 

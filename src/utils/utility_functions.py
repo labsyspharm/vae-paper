@@ -1,6 +1,7 @@
 import os
 import re
 import shutil
+import pickle
 
 import numpy as np
 import pandas as pd
@@ -16,6 +17,7 @@ from matplotlib import cm
 from matplotlib import colors
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
+from matplotlib.patches import Patch
 from matplotlib.colors import to_rgb
 import matplotlib.gridspec as gridspec
 from matplotlib.colors import Normalize
@@ -264,75 +266,89 @@ def u_stats(df, metric, cluster_select, channels, combo_label):
 
 def compare_clusters(clus1_name, clus2_name, clus1_idxs, clus2_idxs, metric, channels, X_combo, combo_label, save_dir, window_size):
     """Compute similarity metrics for two clusters of image patches."""
-
-    print()
+    
+    # computation within clusters
     cluster_select = {}
     df = pd.DataFrame(columns=['cluster', 'channel', 'marker', metric])
     for marker in channels.keys():
-        marker_df = pd.DataFrame(columns=['cluster', 'channel', 'marker', metric])
-        for clus, clus_ids in zip([clus1_name, clus2_name], [clus1_idxs, clus2_idxs]):
-            print(
-                f'Computing {metric} for Cluster: {clus}, Channel: {marker}'
-            )
-            cluster_df = pd.DataFrame(columns=['cluster', 'channel', 'marker', metric])
-            measurements_within = []
-            for combo in tqdm(
-                    combinations(clus_ids, 2), total=len(list(combinations(clus_ids, 2)))):
-                img1 = X_combo[combo[0], :, :, channels[marker]]
-                img2 = X_combo[combo[1], :, :, channels[marker]]
-                img1 = (
-                    (img1 - np.min(img1)) / (np.max(img1) - np.min(img1)).astype('float32')
+
+        if not os.path.exists(os.path.join(save_dir, f'{metric}_across_{marker}.pkl')):
+            
+            marker_df = pd.DataFrame(columns=['cluster', 'channel', 'marker', metric])
+            
+            for clus, clus_ids in zip([clus1_name, clus2_name], [clus1_idxs, clus2_idxs]):
+                print(
+                    f'Computing {metric} within cluster {clus} for channel {marker}'
                 )
-                img2 = (
-                    (img2 - np.min(img2)) / (np.max(img2) - np.min(img2)).astype('float32')
-                )
+                cluster_df = pd.DataFrame(columns=['cluster', 'channel', 'marker', metric])
+                measurements_within = []
+                for combo in tqdm(
+                        combinations(clus_ids, 2), total=len(list(combinations(clus_ids, 2)))):
+                    img1 = X_combo[combo[0], :, :, channels[marker]]
+                    img2 = X_combo[combo[1], :, :, channels[marker]]
+                    img1 = (
+                        (img1 - np.min(img1)) / (np.max(img1) - np.min(img1)).astype('float32')
+                    )
+                    img2 = (
+                        (img2 - np.min(img2)) / (np.max(img2) - np.min(img2)).astype('float32')
+                    )
+                    
+                    if metric == 'SSIM':
+                        sm = SSIM(img1, img2)
+                        measurements_within.append(sm)
+        
+                    elif metric == 'LBP':
+                        hist1, hist2 = LBP(img1, img2)
+                        cb_dist = cityblock(u=hist1, v=hist2)
+                        measurements_within.append(cb_dist)
+        
+                        # kld_score = kl_divergence(hist1, hist2)
+                        # measurements_within.append(kld_score)
+        
+                        # ks_score, kspval = kstest(
+                        #     rvs=hist1, cdf=hist2, alternative='two-sided'
+                        #     )
+                        # measurements_within.append(ks_score)
+        
+                    elif metric == 'ORB':
+                        ob = ORB(img1, img2)
+                        measurements_within.append(ob)
+        
+                    elif metric == 'FFT':
+                        min_mse = FFT(img1, img2)
+                        measurements_within.append(min_mse)
+        
+                        # cb_dist = cityblock(u=hists[0], v=hists[1])
+                        # measurements_within.append(cb_dist)
+        
+                        # corr = pearsonr(x=Abs[0], y=Abs[1])[0]
+                        # measurements_within.append(corr)
+        
+                    elif metric == 'STD':
+                        score = STD(img1, img2)
+                        measurements_within.append(score)
+        
+                    elif metric == 'MSE':
+                        mse = MSE(img1, img2)
+                        measurements_within.append(mse)
 
-                if metric == 'SSIM':
-                    sm = SSIM(img1, img2)
-                    measurements_within.append(sm)
-
-                elif metric == 'LBP':
-                    hist1, hist2 = LBP(img1, img2)
-                    cb_dist = cityblock(u=hist1, v=hist2)
-                    measurements_within.append(cb_dist)
-
-                    # kld_score = kl_divergence(hist1, hist2)
-                    # measurements_within.append(kld_score)
-
-                    # ks_score, kspval = kstest(
-                    #     rvs=hist1, cdf=hist2, alternative='two-sided'
-                    #     )
-                    # measurements_within.append(ks_score)
-
-                elif metric == 'ORB':
-                    ob = ORB(img1, img2)
-                    measurements_within.append(ob)
-
-                elif metric == 'FFT':
-                    min_mse = FFT(img1, img2)
-                    measurements_within.append(min_mse)
-
-                    # cb_dist = cityblock(u=hists[0], v=hists[1])
-                    # measurements_within.append(cb_dist)
-
-                    # corr = pearsonr(x=Abs[0], y=Abs[1])[0]
-                    # measurements_within.append(corr)
-
-                elif metric == 'STD':
-                    score = STD(img1, img2)
-                    measurements_within.append(score)
-
-                elif metric == 'MSE':
-                    mse = MSE(img1, img2)
-                    measurements_within.append(mse)
-
-            cluster_df[metric] = measurements_within
-            cluster_df['cluster'] = clus
-            cluster_df['channel'] = channels[marker]
-            cluster_df['marker'] = marker
-
-            marker_df = pd.concat([marker_df, cluster_df], axis=0)
-
+                cluster_df[metric] = measurements_within
+                cluster_df['cluster'] = clus
+                cluster_df['channel'] = channels[marker]
+                cluster_df['marker'] = marker
+    
+                if not marker_df.empty:
+                    marker_df = pd.concat([marker_df, cluster_df], axis=0)
+                else:
+                    marker_df = cluster_df
+            
+            with open(os.path.join(save_dir, f'{metric}_across_{marker}.pkl'), 'wb') as handle:
+                pickle.dump(marker_df, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        
+        else:
+            with open(os.path.join(save_dir, f'{metric}_across_{marker}.pkl'), 'rb') as f:
+                marker_df = pickle.load(f)
+        
         # select cluster with smaller median
         clus1_data = marker_df[metric][
             (marker_df['cluster'] == clus1_name) &
@@ -372,107 +388,121 @@ def compare_clusters(clus1_name, clus2_name, clus1_idxs, clus2_idxs, metric, cha
         #     marker_df = marker_df[marker_df['cluster'] == clus2_name]
         #     marker_df['marker'] = str(clus2_name) + ', ' + marker
         #     cluster_select[marker] = str(clus2_name)
-
-        df = pd.concat([df, marker_df], axis=0)
-        print()
-
+    
+        if not df.empty:
+                df = pd.concat([df, marker_df], axis=0)
+        else:
+            df = marker_df
+    
+    # computation between clusters
     sq_err = {}
     for marker in channels.keys():
-        print(
-            f'Computing {metric} across clusters {combo_label} for '
-            f'channel: {marker}')
 
-        z1 = zarr.open(
-            os.path.join(save_dir, 'error1.zarr'), mode='w',
-            shape=(window_size, window_size, len(clus1_idxs) * len(clus2_idxs)),
-            chunks=(window_size, window_size, 200), dtype='float32'
-        )
-        z2 = zarr.open(
-            os.path.join(save_dir, 'error2.zarr'), mode='w',
-            shape=(window_size, window_size, len(clus1_idxs) * len(clus2_idxs)),
-            chunks=(window_size, window_size, 200), dtype='float32'
-        )
-        temp_df = pd.DataFrame(columns=['cluster', 'channel', 'marker', metric])
-        measurements_across = []
-        err_counter = 0
-        for i in tqdm(clus1_idxs):
-            for j in clus2_idxs:
-                img1 = X_combo[i, :, :, channels[marker]]
-                img2 = X_combo[j, :, :, channels[marker]]
+        if not os.path.exists(os.path.join(save_dir, f'{metric}_between_{marker}.pkl')):
+            
+            print(
+                f'Computing {metric} between clusters {combo_label} for '
+                f'channel: {marker}')
+            
+            z1 = zarr.open(
+                os.path.join(save_dir, f'error1_{marker}.zarr'), mode='w',
+                shape=(window_size, window_size, len(clus1_idxs) * len(clus2_idxs)),
+                chunks=(window_size, window_size, 200), dtype='float32'
+            )
+            
+            z2 = zarr.open(
+                os.path.join(save_dir, f'error2_{marker}.zarr'), mode='w',
+                shape=(window_size, window_size, len(clus1_idxs) * len(clus2_idxs)),
+                chunks=(window_size, window_size, 200), dtype='float32'
+            )
+            
+            temp_df = pd.DataFrame(columns=['cluster', 'channel', 'marker', metric])
+            measurements_across = []
+            err_counter = 0
+            for i in tqdm(clus1_idxs):
+                for j in clus2_idxs:
+                    img1 = X_combo[i, :, :, channels[marker]]
+                    img2 = X_combo[j, :, :, channels[marker]]
+    
+                    img1 = (
+                        (img1 - np.min(img1)) / (np.max(img1) - np.min(img1)).astype('float32')
+                    )
+                    img2 = (
+                        (img2 - np.min(img2)) / (np.max(img2) - np.min(img2)).astype('float32')
+                    )
+    
+                    # compute squared error image array every 100 iterations
+                    if err_counter % 100 == 0:
+    
+                        err1 = (img1 - img2)
+                        err1[err1 < 0] = 0
+                        z1[:, :, err_counter] = err1
+    
+                        err2 = (img2 - img1)
+                        err2[err2 < 0] = 0
+                        z2[:, :, err_counter] = err2
+    
+                    err_counter += 1
+    
+                    if metric == 'SSIM':
+                        # compute structural similarity index measures
+                        # for images within current cluster
+                        sm = SSIM(img1, img2)
+                        measurements_across.append(sm)
+    
+                    elif metric == 'LBP':
+                        hist1, hist2 = LBP(img1, img2)
+                        cb_dist = cityblock(u=hist1, v=hist2)
+                        measurements_across.append(cb_dist)
+    
+                        # kld_score = kl_divergence(hist1, hist2)
+                        # measurements_across.append(kld_score)
+    
+                        # ks_score, kspval = kstest(
+                        #     rvs=hist1, cdf=hist2, alternative='two-sided'
+                        #     )
+                        # measurements_across.append(ks_score)
+    
+                    elif metric == 'ORB':
+                        ob = ORB(img1, img2)
+                        measurements_across.append(ob)
+    
+                    elif metric == 'FFT':
+                        img1t, img2t, hists, Abs = FFT(img1, img2)
+                        measurements_across.append(np.sum((abs(img1t - img2t))))
+    
+                        # cb_dist = cityblock(u=hists[0], v=hists[1])
+                        # measurements_across.append(cb_dist)
+                        #
+                        # corr = pearsonr(x=Abs[0], y=Abs[1])[0]
+                        # measurements_across.append(corr)
+    
+                    elif metric == 'STD':
+                        score = STD(img1, img2)
+                        measurements_across.append(score)
+    
+                    elif metric == 'MSE':
+                        mse = MSE(img1, img2)
+                        measurements_across.append(mse)
+            
+            temp_df[metric] = measurements_across
+            temp_df['cluster'] = combo_label
+            temp_df['channel'] = channels[marker]
+            temp_df['marker'] = cluster_select[marker] + ', ' + marker
+            
+            with open(os.path.join(save_dir, f'{metric}_between_{marker}.pkl'), 'wb') as handle:
+                pickle.dump(temp_df, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-                img1 = (
-                    (img1 - np.min(img1)) / (np.max(img1) - np.min(img1)).astype('float32')
-                )
-                img2 = (
-                    (img2 - np.min(img2)) / (np.max(img2) - np.min(img2)).astype('float32')
-                )
-
-                # compute squared error image array every 100 iterations
-                if err_counter % 100 == 0:
-
-                    err1 = (img1 - img2)
-                    err1[err1 < 0] = 0
-                    z1[:, :, err_counter] = err1
-
-                    err2 = (img2 - img1)
-                    err2[err2 < 0] = 0
-                    z2[:, :, err_counter] = err2
-
-                err_counter += 1
-
-                if metric == 'SSIM':
-                    # compute structural similarity index measures
-                    # for images within current cluster
-                    sm = SSIM(img1, img2)
-                    measurements_across.append(sm)
-
-                elif metric == 'LBP':
-                    hist1, hist2 = LBP(img1, img2)
-                    cb_dist = cityblock(u=hist1, v=hist2)
-                    measurements_across.append(cb_dist)
-
-                    # kld_score = kl_divergence(hist1, hist2)
-                    # measurements_across.append(kld_score)
-
-                    # ks_score, kspval = kstest(
-                    #     rvs=hist1, cdf=hist2, alternative='two-sided'
-                    #     )
-                    # measurements_across.append(ks_score)
-
-                elif metric == 'ORB':
-                    ob = ORB(img1, img2)
-                    measurements_across.append(ob)
-
-                elif metric == 'FFT':
-                    img1t, img2t, hists, Abs = FFT(img1, img2)
-                    measurements_across.append(np.sum((abs(img1t - img2t))))
-
-                    # cb_dist = cityblock(u=hists[0], v=hists[1])
-                    # measurements_across.append(cb_dist)
-                    #
-                    # corr = pearsonr(x=Abs[0], y=Abs[1])[0]
-                    # measurements_across.append(corr)
-
-                elif metric == 'STD':
-                    score = STD(img1, img2)
-                    measurements_across.append(score)
-
-                elif metric == 'MSE':
-                    mse = MSE(img1, img2)
-                    measurements_across.append(mse)
-
-        temp_df[metric] = measurements_across
-        temp_df['cluster'] = combo_label
-        temp_df['channel'] = channels[marker]
-        temp_df['marker'] = cluster_select[marker] + ', ' + marker
+        else:
+            with open(os.path.join(save_dir, f'{metric}_between_{marker}.pkl'), 'rb') as f:
+                temp_df = pickle.load(f)
+            
+            z1 = zarr.open(os.path.join(save_dir, f'error1_{marker}.zarr'), mode='r')
+            z2 = zarr.open(os.path.join(save_dir, f'error2_{marker}.zarr'), mode='r')
         
         df = pd.concat([df, temp_df], axis=0)
 
         sq_err[marker] = (np.mean(z1, axis=2), np.mean(z2, axis=2))
-
-        shutil.rmtree(os.path.join(save_dir, 'error1.zarr'))
-        shutil.rmtree(os.path.join(save_dir, 'error2.zarr'))
-    print()
 
     return df, cluster_select, sq_err
 
@@ -485,24 +515,31 @@ def plot(df, metric, stats, sq_err, combo_label, clus_pair, save_dir):
 
     g = sns.catplot(
         data=df, x='marker', y=metric, hue='cluster', kind='boxen',
-        palette=['gray', 'white'], aspect=1.5, legend=True
+        palette=['gray', 'white'], aspect=1.5, legend=False
     )
+    
     g.set(ylim=(None, None))
-    g.set_xticklabels(fontsize=15, weight='normal', rotation=45)
-    g.set_yticklabels(fontsize=12, weight='normal')
+    g.set_yticklabels(fontsize=8, weight='normal')
     g.set(xlabel=None)
-
+    
     for ax in g.axes.flat:
         labels = [i.get_text() for i in ax.get_xticklabels()]
         labels = ['Ref.' + i.split(', ')[0] + ', ' + i.split(', ')[1] for i in labels]
-        g.set_xticklabels(labels, fontsize=15, weight='normal', rotation=45)
+        g.set_xticklabels(labels, fontsize=8, weight='normal', rotation=0)
         if metric == 'LBP':
             ax.set_ylabel('L1 distance', fontsize=20, weight='normal')
         elif metric == 'FFT':
             ax.set_ylabel('\u03A3|img1t-img2t|', fontsize=20, weight='normal')
         else:
             ax.set_ylabel(ax.get_ylabel(), fontsize=20, weight='normal')
-    plt.legend(bbox_to_anchor=(1.0, 1.0), loc='upper left', borderaxespad=0)
+
+    legend_elements = [
+         Patch(facecolor='gray', edgecolor='k', label='Ref.'),
+         Patch(facecolor='white', edgecolor='k', label='18v22')
+    ]
+
+    plt.legend(handles=legend_elements, bbox_to_anchor=(1.0, 1.0), 
+              loc='upper left', borderaxespad=0)
 
     # add t-stats to figure
     for row in stats.iterrows():
@@ -535,8 +572,15 @@ def plot(df, metric, stats, sq_err, combo_label, clus_pair, save_dir):
     # hists
     g = sns.displot(
         data=df, x=metric, hue='cluster', col='marker', kind='kde',
-        aspect=1.5, palette=['grey', 'k'], lw=5
+        aspect=1.0, palette=['gray', 'k'], lw=8
     )
+    for ax in g.axes_dict.values():
+        ax.set_title(ax.get_title(), fontsize=20, fontweight='bold')
+
+    if g._legend is not None:
+        plt.setp(g._legend.get_texts(), fontsize=25)
+        g._legend.set_title(g._legend.get_title().get_text(), prop={'size': 25})
+
     for ax in g.axes.flat:
         if metric == 'LBP':
             ax.set_xlabel('L1 distance', fontsize=15, weight='normal')
@@ -545,17 +589,17 @@ def plot(df, metric, stats, sq_err, combo_label, clus_pair, save_dir):
         else:
             ax.set_xlabel(ax.get_xlabel(), fontsize=15, weight='normal')
         ax.set_ylabel(ax.get_ylabel(), fontsize=15, weight='normal')
-    plt.tight_layout()
+    # plt.tight_layout()
     plt.savefig(os.path.join(save_dir, f'{metric}_kdeplots.pdf'))
     plt.show()
     plt.close('all')
 
     # squared error
-    fig = plt.figure(figsize=(10, 5))
+    fig = plt.figure(figsize=(6, 3))
     rows = 1
     cols = len(sq_err.keys())
     intensity_multiplier = 1.25
-    outer = gridspec.GridSpec(1, 21, wspace=0.1, hspace=0.0)
+    outer = gridspec.GridSpec(1, 4, wspace=0.1, hspace=0.0)
     for e, (marker, img) in enumerate(sq_err.items()):
 
         ax = plt.Subplot(fig, outer[e])
@@ -584,20 +628,21 @@ def plot(df, metric, stats, sq_err, combo_label, clus_pair, save_dir):
                 [clus_pair[0], clus_pair[1]], [img1, img2],
                 [[0.13, 0.68, 0.97], [0.97, 0.68, 0.13]]):
             overlay += im * color
-            legend_elements.append(Line2D([0], [0], color=color, lw=1, label=name))
-
+            legend_elements.append(Line2D([0], [0], color=color, lw=10, label=name))
+        
+        overlay = np.clip(overlay, 0, 1)
         ax.imshow(overlay)
 
-        ax.set_title(marker, fontsize=2, pad=1)
+        ax.set_title(marker, fontsize=13, pad=1)
         fig.add_subplot(ax)
 
     # add legend to last plot
     leg = ax.legend(
-        handles=legend_elements, prop={'size': 1}, bbox_to_anchor=(1.6, 1.0))
+        handles=legend_elements, prop={'size': 9}, bbox_to_anchor=(1.8, 1.1))
     leg.get_frame().set_linewidth(0.0)
     
     plt.savefig(
-        os.path.join(save_dir, f'{metric}_sq_error.png'), dpi=800, bbox_inches='tight'
+        os.path.join(save_dir, f'{metric}_sq_error.png'), dpi=600, bbox_inches='tight'
     )
     plt.show()
     plt.close('all')
