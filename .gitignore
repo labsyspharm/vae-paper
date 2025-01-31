@@ -5,9 +5,6 @@
 input/
 output/
 Ben/
-ARCHIVE/
-INPUT_NOT_USED/
-OUTPUT_NOT_USED/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
