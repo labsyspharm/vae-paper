@@ -626,7 +626,7 @@ def plot(df, metric, stats, sq_err, combo_label, clus_pair, save_dir):
         legend_elements = []
         for name, im, color in zip(
                 [clus_pair[0], clus_pair[1]], [img1, img2],
-                [[0.13, 0.68, 0.97], [0.97, 0.68, 0.13]]):
+            [[0.1725, 0.6275, 0.1725], [0.8902, 0.4667, 0.7608]]):  # [[0.13, 0.68, 0.97], [0.97, 0.68, 0.13]]
             overlay += im * color
             legend_elements.append(Line2D([0], [0], color=color, lw=10, label=name))
         
@@ -997,10 +997,10 @@ def PlotReconstructedImages(orig_input_dims, percentile_cutoffs, contrast_limits
                 overlay = np.zeros((transformed.shape[0], transformed.shape[1]))
 
                 # add centroid point at the center of the image
-                overlay[
-                    int(transformed.shape[0] / 2):int(transformed.shape[0] / 2) + 1,
-                    int(transformed.shape[1] / 2):int(transformed.shape[1] / 2) + 1
-                ] = 1
+                # overlay[
+                #     int(transformed.shape[0] / 2):int(transformed.shape[0] / 2) + 1,
+                #     int(transformed.shape[1] / 2):int(transformed.shape[1] / 2) + 1
+                # ] = 1
 
                 overlay = gray2rgb(overlay)
 
@@ -1018,7 +1018,7 @@ def PlotReconstructedImages(orig_input_dims, percentile_cutoffs, contrast_limits
 
                     overlay += channel_slice.compute() * to_rgb(color)
 
-                overlay += seg_slice.compute()
+                # overlay += seg_slice.compute()
             
             elif panel == 1:
                 
@@ -1066,12 +1066,12 @@ def PlotReconstructedImages(orig_input_dims, percentile_cutoffs, contrast_limits
                 overlay = np.zeros((reconstructed_img.shape[0], reconstructed_img.shape[1]))
 
                 # add centroid point at the center of the image
-                # overlay[
-                #     int(reconstructed_img.shape[0] / 2):int(
-                #         reconstructed_img.shape[0] / 2) + 1,
-                #     int(reconstructed_img.shape[1] / 2):int(
-                #         reconstructed_img.shape[1] / 2) + 1
-                # ] = 1
+                overlay[
+                    int(reconstructed_img.shape[0] / 2):int(
+                        reconstructed_img.shape[0] / 2) + 1,
+                    int(reconstructed_img.shape[1] / 2):int(
+                        reconstructed_img.shape[1] / 2) + 1
+                ] = 1
 
                 overlay = gray2rgb(overlay)
 
@@ -1089,7 +1089,7 @@ def PlotReconstructedImages(orig_input_dims, percentile_cutoffs, contrast_limits
 
                     overlay += channel_slice * to_rgb(color)
 
-                # overlay += seg_slice.compute()
+                overlay += seg_slice.compute()
                 
             overlay = np.clip(overlay, 0, 1)  # avoiding matplotlib warning about clipping
             ax.imshow(overlay)
