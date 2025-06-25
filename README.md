@@ -5,17 +5,17 @@
 
 # Computational Notebooks for "Morphology-Aware Profiling of Highly Multiplexed Tissue Images using Variational Autoencoders"
 
-<h5>Gregory J. Baker<sup>1,2,3,*,#</sup>,    
+<h5>Gregory J. Baker<sup>1,2,3,&,*,#</sup>,    
 Edward Novikov<sup>1,4,*</sup>,
+Shannon Coy<sup>1,2,5</sup>,
 Yu-An Chen<sup>1,2</sup>,
 Clemens B. Hug<sup>1</sup>,
 Zergham Ahmed<sup>1,4</sup>, 
 Sebastián A. Cajas Ordóñez<sup>4</sup>,
-Siyu Huang<sup>4</sup>,
-Clarence Yapp<sup>1,5</sup>,
-Shannon Coy<sup>1,2,6</sup>,
+Siyu Huang<sup>4,%</sup>,
+Clarence Yapp<sup>1</sup>,
+Artem Sokolov<sup>1</sup>,
 Hanspeter Pfister<sup>4</sup>,
-Artem Sokolov<sup>1,7</sup>,
 Peter K. Sorger<sup>1,2,3,#</sup></h5>
 
 <sup>1</sup>Laboratory of Systems Pharmacology, Harvard Medical School, Boston, MA
@@ -24,8 +24,11 @@ Peter K. Sorger<sup>1,2,3,#</sup></h5>
 <sup>4</sup>Harvard John A. Paulson School of Engineering and Applied Sciences, Harvard University, Cambridge, MA
 <sup>5</sup>Department of Pathology, Brigham and Women’s Hospital, Harvard Medical School, Boston, MA
 
+<sup>&</sup> Current affiliation: Division of Oncological Sciences, Knight Cancer Institute, Oregon Health & Science University, Portland, OR  
+<sup>%</sup> Current affiliation: Visual Computing Division, School of Computing, Clemson University, Clemson, SC
+
 \*Co-first Authors: G.J.B., E.N.<br>
-\#Corresponding Authors: gregory_baker2@hms.harvard.edu (G.J.B.), peter_sorger@hms.harvard.edu (P.K.S.)<br>
+\#Corresponding Authors: gbak7696@gmail.com (G.J.B.), peter_sorger@hms.harvard.edu (P.K.S.)<br>
 
 <!-- *Nature Cancer (2023). DOI: [10.1038/s43018-023-00576-1](https://doi.org/10.1038/s43018-023-00576-1)* -->
 
@@ -38,7 +41,7 @@ Spatial proteomics (highly multiplexed tissue imaging) provides unprecedented in
 ## Running the computational notebooks
 If not already installed, download `conda` following the instructions provided [here](https://docs.anaconda.com/miniconda/). 
 
-The Python code in this GitHub repository is organized in Jupyter Notebooks and used to generate figures shown in the paper. To run the code, first clone this repo onto your computer. Then download the required [input](https://www.synapse.org/#!Synapse:syn24193163/files/) data folder from the Sage Bionetworks Synpase data repository dedicated to the MORPHӔUS project into the `src` folder of the cloned repo. This folder also contains the full images and image patches used in the paper. Change directories into the top level of the cloned repo and create and activate a dedicated Conda environment with the necessary Python libraries for running the code by entering the following commands:
+The Python code in this GitHub repository is organized into Jupyter Notebooks and used to generate the figures shown in this paper. To run the code, first clone this repo onto your computer. Then download the required [input](s3://lsp-public-data/baker-2025-vae/) data folder from from our public Amazon S3 bucket into the `src` folder of the cloned repo. This bucket can be accessed using Cyberduck or other graphical S3 tools, or AWS Command Line tools. Detailed instructions for accessing the data can be found here: https://zenodo.org/records/10223574. Change directories into the top level of the cloned repo and create and activate a dedicated Conda environment with the necessary Python libraries for running the code by entering the following commands:
 
 ```bash
 cd <path/to/cloned/repo>
@@ -47,7 +50,7 @@ conda activate morphaeus-paper
 
 ```
 
-Next, change directories to the `src` folder and open the computational notebooks in JupyterLab with the following command:
+Next, change directories to the `src` folder and run the following command to open, brows, and run the computational notebooks with JupyterLab:
 ```bash
 jupyter lab
 
@@ -55,25 +58,32 @@ jupyter lab
 
 ---
 
+## MORPHӔUS Source Code and Demo
 
-## MORPHӔUS Source Code
+MORPHÆUS source code is freely available for academic re-use under the MIT license on [GitHub](https://github.com/labsyspharm/vae) and is also archived on Zenodo.
 
-MORPHӔUS source code will be made freely-available upon the release of the paper and will be archived on [GitHub](https://github.com/labsyspharm/vae) and Zenodo.
+
+To demo the MORPHÆUS data analysis pipeline, open a terminal, navigate to the `demo` directory of this repo, and run the following command:
+```bash
+vae config.yml
+
+```
+This will launch the MORPHÆUS pipeline on a small subsample of data from the CyCIF-1A image presented in the paper, demonstrating all major modules ranging from CSV subsampling and image patch generation, to VAE model training, plot visualization, and concept saliency analysis.
+
+Note: demo results will differ from those shown in the paper due to the use of a smaller training dataset and fewer training epochs. Epochs in this demo are estimated to complete in about 30sec - 1min running locally on CPUs (~100 epochs are required before cell clusters will be observed). Lightly pre-trained encoder and decoder networks are provided to skip the training step, in which case a text file with the name `TRAIN_VAE.txt` must be placed in the `checkpoints` folder for the pipeline to skip this step.
+
 
 ---
-
 
 ## Data Availability
 
-Image files associated with this paper were first generated as part of the Human Tumor Atlas Network (HTAN) project and are available at the [HTAN Data Portal](https://data.humantumoratlas.org). Input images required to run the source code found here is also freely-available at [Sage Synapse](https://www.synapse.org/#!Synapse:syn53216852/files/)
-
+Image files associated with this paper were first generated as part of the Human Tumor Atlas Network (HTAN) project and are available at the [HTAN Data Portal](https://data.humantumoratlas.org).
 
 ---
 
+## Funding
 
-## Funding and Acknowledgments
-
-This work was supported by the Ludwig Cancer Research, the Ludwig Center at Harvard (P.K.S., S.S.), the Gray Foundation, and by NIH NCI grants U01-CA284207, and U2C-CA233262. S.S. is supported by the BWH President’s Scholars Award. Results shown in this study are in part based upon data generated by the Human Tumor Atlas Network (HTAN, https://humantumoratlas.org/). 
+This work was supported by Ludwig Cancer Research and the Ludwig Center at Harvard (P.K.S., S.S.), the Gray Foundation, and by NIH NCI grants U01-CA284207, and U2C-CA233262. S.S. is supported by the BWH President’s Scholars Award. Results shown in this study are in part based upon data generated by the Human Tumor Atlas Network (HTAN, https://humantumoratlas.org/).  
 
 ---
 
@@ -83,10 +93,6 @@ The Python code (i.e., Jupyter Notebooks) in this GitHub repository is archived 
 
 ---
 
-
 ## References
 
-<!-- <a id="1">[1]</a>
-Baker GJ. et al. Quality Control for Single Cell Analysis of High-plex Tissue Profiles using CyLinter. **bioRxiv** (2023) https://doi.org/10.1101/2023.11.01.565120 -->
-
-
+<a id="1">[1]</a> Baker GJ., Novikov E. et al. Morphology-Aware Profiling of Highly Multiplexed Tissue Images using Variational Autoencoders. **bioRxiv** (2025) https://doi.org/10.1101/2023.11.01.565120
