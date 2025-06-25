@@ -4,6 +4,7 @@
 # CyLinter directories
 input/
 output/
+demo/
 Ben/
 
 # Byte-compiled / optimized / DLL files

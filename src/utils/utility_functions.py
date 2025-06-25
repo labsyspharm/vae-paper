@@ -135,7 +135,6 @@ def compute_vignette_mask(window_size, std_dev):
     return mask, vmin, vmax
 
 
-
 def reverse_processing(percentile_cutoffs, channel_slice, channel_name, contrast_limits):
     """Reverses percentile normalization and log10-transformation,
        pixel outliers remained clipped)."""
@@ -166,24 +165,19 @@ def reverse_processing(percentile_cutoffs, channel_slice, channel_name, contrast
     return channel_slice
 
 
-# def jaccard_index(set1, set2):
-#     """Function to calculate Jaccard Index between two sets"""
-#     intersection = len(set(set1).intersection(set2))
-#     union = len(set(set1).union(set2))
-#     return intersection / union if union != 0 else 0
+def kl_divergence(p, q):
+    p = np.asarray(p)
+    q = np.asarray(q)
+    filt = np.logical_and(p != 0, q != 0)
+    return np.sum(p[filt] * np.log2(p[filt] / q[filt]))
 
-
-# def kl_divergence(p, q):
-#     p = np.asarray(p)
-#     q = np.asarray(q)
-#     filt = np.logical_and(p != 0, q != 0)
-#     return np.sum(p[filt] * np.log2(p[filt] / q[filt]))
 
 def jaccard_index(set1, set2):
     """Function to calculate Jaccard Index between two sets"""
     intersection = len(set(set1).intersection(set2))
     union = len(set(set1).union(set2))
     return intersection / union if union != 0 else 0
+
 
 def u_stats(df, metric, cluster_select, channels, combo_label):
     """Compute Mann-Whitney U-test between similarity
@@ -218,50 +212,50 @@ def u_stats(df, metric, cluster_select, channels, combo_label):
     return stats
 
 
-# def hsd(df, metric):
-#     """Compute one-way ANOVA and Tukey HSD stats between
-#        three groups of cluster similarity metrics."""
+def hsd(df, metric):
+    """Compute one-way ANOVA and Tukey HSD stats between
+       three groups of cluster similarity metrics."""
 
-#     hsds = pd.DataFrame()
-#     for ch in channels.keys():
-#         clus1_data = df[metric][
-#             (df['cluster'] == clus_pair[0]) & (df['marker'] == markers[ch])].astype('float')
-#         clus2_data = df[metric][
-#             (df['cluster'] == clus_pair[1]) & (df['marker'] == markers[ch])].astype('float')
-#         combo_data = df[metric][
-#             (df['cluster'] == combo_label) & (df['marker'] == markers[ch])].astype('float')
+    hsds = pd.DataFrame()
+    for ch in channels.keys():
+        clus1_data = df[metric][
+            (df['cluster'] == clus_pair[0]) & (df['marker'] == markers[ch])].astype('float')
+        clus2_data = df[metric][
+            (df['cluster'] == clus_pair[1]) & (df['marker'] == markers[ch])].astype('float')
+        combo_data = df[metric][
+            (df['cluster'] == combo_label) & (df['marker'] == markers[ch])].astype('float')
 
-#         # compute one-way ANOVA
-#         fval, pval = f_oneway(clus1_data, clus2_data, combo_data)
-#         print(
-#             f"{metric} F-test pval is {'%.2E' % Decimal(pval)} for {markers[ch]}")
+        # compute one-way ANOVA
+        fval, pval = f_oneway(clus1_data, clus2_data, combo_data)
+        print(
+            f"{metric} F-test pval is {'%.2E' % Decimal(pval)} for {markers[ch]}")
 
-#         if pval <= 0.05:
-#             # perform multiple pairwise comparisons (Tukey's HSD)
-#             # and store in df
-#             res = tukey_hsd(list(clus1_data), list(clus2_data), list(combo_data))
-#             res_df = pd.DataFrame(
-#                 index=[clus_pair[0], clus_pair[1], combo_label],
-#                 columns=[clus_pair[0], clus_pair[1], combo_label],
-#                 data=res.pvalue)
-#             hsd = (
-#                 res_df
-#                 .mask(np.tril(np.ones(res_df.shape)).astype(bool))
-#                 .stack()
-#                 .reset_index()
-#                 .rename(columns={0: 'pval'})
-#             )
-#             hsd['comparison'] = hsd['level_0'].astype(str) + '/' + hsd['level_1'].astype(str)
-#             hsd.drop(columns=['level_0', 'level_1'], inplace=True)
-#             hsd['marker'] = channels[ch][0]
-#             hsd['plot_ch'] = channels[ch][1]
-#             hsds = pd.concat([hsds, hsd], ignore_index=False)
-#     hsds.reset_index(drop=True, inplace=True)
-#     print()
-#     print(f'{metric} HSD-stats:')
-#     print(hsds)
+        if pval <= 0.05:
+            # perform multiple pairwise comparisons (Tukey's HSD)
+            # and store in df
+            res = tukey_hsd(list(clus1_data), list(clus2_data), list(combo_data))
+            res_df = pd.DataFrame(
+                index=[clus_pair[0], clus_pair[1], combo_label],
+                columns=[clus_pair[0], clus_pair[1], combo_label],
+                data=res.pvalue)
+            hsd = (
+                res_df
+                .mask(np.tril(np.ones(res_df.shape)).astype(bool))
+                .stack()
+                .reset_index()
+                .rename(columns={0: 'pval'})
+            )
+            hsd['comparison'] = hsd['level_0'].astype(str) + '/' + hsd['level_1'].astype(str)
+            hsd.drop(columns=['level_0', 'level_1'], inplace=True)
+            hsd['marker'] = channels[ch][0]
+            hsd['plot_ch'] = channels[ch][1]
+            hsds = pd.concat([hsds, hsd], ignore_index=False)
+    hsds.reset_index(drop=True, inplace=True)
+    print()
+    print(f'{metric} HSD-stats:')
+    print(hsds)
 
-#     return hsds
+    return hsds
 
 
 def compare_clusters(clus1_name, clus2_name, clus1_idxs, clus2_idxs, metric, channels, X_combo, combo_label, save_dir, window_size):
@@ -839,32 +833,6 @@ def single_channel_pyramid(tiff_path, channel):
             vmin, vmax = da.compute(min_val, max_val)
 
         return pyramid, vmin, vmax
-
-
-# def read_markers(markers_filepath, markers_to_exclude, data):
-#     markers = pd.read_csv(markers_filepath, dtype={0: 'int16', 1: 'int16', 2: 'str'}, comment='#')
-#     if data is None:
-#         markers_to_include = [
-#             i for i in markers['marker_name']
-#             if i not in markers_to_exclude
-#         ]
-#     else:
-#         markers_to_include = [
-#             i for i in markers['marker_name']
-#             if i not in markers_to_exclude if i in data.columns
-#         ]
-
-#     markers = markers[markers['marker_name'].isin(markers_to_include)]
-
-#     dna1 = markers['marker_name'][markers['channel_number'] == 1][0]
-#     dna_moniker = str(re.search(r'[^\W\d]+', dna1).group())
-
-#     # abx channels
-#     abx_channels = [
-#         i for i in markers['marker_name'] if dna_moniker not in i
-#     ]
-
-#     return markers, dna1, dna_moniker, abx_channels
 
 
 def categorical_cmap(numUniqueSamples, numCatagories, cmap='tab10', continuous=False):
