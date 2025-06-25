@@ -1,28 +1,28 @@
 output_path: "./VAE9_VIG7"
 # path to arbitrary output folder (created on-the-fly) 
 
-csv_path: "src/input/CyCIF-1A_clean_cylinter_clustering_3d_leiden.parquet"
+csv_path: "../input/CyCIF-1A_clean_cylinter_clustering_3d_leiden.parquet"
 # path to post-CyLinter spatial feature table
 
 cluster_column: "cluster_3d"
 # column name in CSV file that contains class or cluster labels from CyLinter
 
-tif_path: "src/input/CyCIF-1A_image.ome.tif"
+tif_path: "../input/CyCIF-1A_image.ome.tif"
 # path to multi-channel image file
 
 tif_channels: ["anti_CD3", "anti_CD45RO", "Keratin_570", "aSMA_660", "CD4_488", "CD45_PE", "PD1_647", "CD20_488", "CD68_555", "CD8a_660", "CD163_488", "FOXP3_570", "PDL1_647", "Ecad_488", "Vimentin_555", "CDX2_647", "LaminABC_488", "Desmin_555", "CD31_647", "PCNA_488", "CollagenIV_647"]
 # channel names (as specified in markers.csv) in the order they appear in the multiplex image
 
-contrast_path: "src/input/CyCIF-1A_cylinter_contrast_limits.yml"
+contrast_path: "../input/CyCIF-1A_cylinter_contrast_limits.yml"
 # image contrast settings previously defined in CyLinter
 
-outlines_path: "src/input/CyCIF-1A_seg_outlines.ome.tif"
+outlines_path: "../input/CyCIF-1A_seg_outlines.ome.tif"
 # path to s3seg segmentation outlines
 
-mask_path: "src/input/CyCIF-1A_mask.tif"
+mask_path: "../input/CyCIF-1A_mask.tif"
 # path to cell ID mask
 
-markers_path: "src/input/CyCIF-1A_mcmicro_markers.csv"
+markers_path: "../input/CyCIF-1A_mcmicro_markers.csv"
 # path to MCMICRO markers metadata files
 
 AAD: False  # the parameter is currently under development and not intended for demo use
@@ -67,10 +67,10 @@ mask_std_dev: 7  # 18 actual (old method)
 learning_rate: 0.000001
 # VAE model learning rate
 
-training_epochs: 100
+training_epochs: 10
 # number of times the full dataset has been seen by the network during model training
 
-lasso_vector_tool: True
+lasso_vector_tool: False
 # toggle to use lasso vector tool to visualize clusters of image patch learned reconstructions
 
 cluster_full_dataset: False

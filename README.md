@@ -38,10 +38,15 @@ Spatial proteomics (highly multiplexed tissue imaging) provides unprecedented in
 
 <!-- [Click to read preprint](https://doi.org/10.1101/2023.11.01.565120) [[1]](#1) -->
 
-## Running the computational notebooks
-If not already installed, download `conda` following the instructions provided [here](https://docs.anaconda.com/miniconda/). 
+## Running the computational notebooks 
 
-The Python code in this GitHub repository is organized into Jupyter Notebooks and used to generate the figures shown in this paper. To run the code, first clone this repo onto your computer. Then download the required [input](s3://lsp-public-data/baker-2025-vae/) data folder from from our public Amazon S3 bucket into the `src` folder of the cloned repo. This bucket can be accessed using Cyberduck or other graphical S3 tools, or AWS Command Line tools. Detailed instructions for accessing the data can be found here: https://zenodo.org/records/10223574. Change directories into the top level of the cloned repo and create and activate a dedicated Conda environment with the necessary Python libraries for running the code by entering the following commands:
+The Python code in this GitHub repository is organized into Jupyter Notebooks and used to generate the figures shown in the paper. To run the code, first clone this repo onto your computer by opening a terminal window and pasting the following command:
+```bash
+git clone https://github.com/labsyspharm/vae-paper.git
+
+```
+
+Next, change directories into the top level of the cloned repo and create and activate a dedicated Conda environment containing the necessary Python libraries for running the code using the following commands:
 
 ```bash
 cd <path/to/cloned/repo>
@@ -49,29 +54,37 @@ conda env create -f environment.yml
 conda activate morphaeus-paper
 
 ```
+Note: If conda is not already installed, you can download it by following the instructions provided [here](https://docs.anaconda.com/miniconda/).
 
-Next, change directories to the `src` folder and run the following command to open, brows, and run the computational notebooks with JupyterLab:
+To browse the Jupyter Notebooks, change directories to the `src` folder and enter the following command:
 ```bash
 jupyter lab
 
 ```
 
+ To re-run any of the Jupyter Notebooks, you must first download the required [input data](s3://lsp-public-data/baker-2025-vae/) from our public Amazon S3 bucket by running the `download.py` script located the `src` folder. This will also download a folder containing precomputed notebook output files:
+```bash
+python src/download.py
+
+```
+ Note: XXXGB of storage space is required to download the complete file set.
+
+ To re-run any of the Notebooks, double click on a .ipynb notebook file at the left and the Notebook will appear at the right. Next click the `double-arrow` button at the top of the Notebook to restart the kernel and run all cells. 
+
 ---
 
 ## MORPHӔUS Source Code and Demo
 
-MORPHÆUS source code is freely available for academic re-use under the MIT license on [GitHub](https://github.com/labsyspharm/vae) and is also archived on Zenodo.
+Source code for the MORPHÆUS data analysis pipeline is freely available for academic re-use under the MIT license, available on [GitHub](https://github.com/labsyspharm/vae), and archived on Zenodo.
 
 
-To demo the MORPHÆUS data analysis pipeline, open a terminal, navigate to the `demo` directory of this repo, and run the following command:
+To test the pipeline, first ensure that the input data have been downloaded from S3 as specified above, then navigate to the `demo` directory and run the following command:
 ```bash
 vae config.yml
-
 ```
-This will launch the MORPHÆUS pipeline on a small subsample of data from the CyCIF-1A image presented in the paper, demonstrating all major modules ranging from CSV subsampling and image patch generation, to VAE model training, plot visualization, and concept saliency analysis.
+This will launch the pipeline on a small subsample of data from the CyCIF-1A image presented in the paper, demonstrating all major modules ranging from CSV subsampling and image patch generation, to VAE model training, plot visualization, and concept saliency analysis.
 
-Note: demo results will differ from those shown in the paper due to the use of a smaller training dataset and fewer training epochs. Epochs in this demo are estimated to complete in about 30sec - 1min running locally on CPUs (~100 epochs are required before cell clusters will be observed). Lightly pre-trained encoder and decoder networks are provided to skip the training step, in which case a text file with the name `TRAIN_VAE.txt` must be placed in the `checkpoints` folder for the pipeline to skip this step.
-
+Note: demo results will differ from those shown in the paper due to the use of a smaller training dataset and fewer training epochs. Epochs in the demo are estimated to complete in about 30sec - 1min running locally on CPUs. For this subsample, ~100 epochs are required before learned reconstructions begin to resemble cells and data start to cluster. Lightly pre-trained encoder and decoder networks are provided so that the training step can be skipped.
 
 ---
 
