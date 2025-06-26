@@ -1,7 +1,7 @@
 .synapseConfig
 *~
 
-# Ignore directories
+# Ignore
 input/
 output/
 Ben/
@@ -13,7 +13,8 @@ demo/VAE9_VIG7/4*/
 demo/VAE9_VIG7/5*/
 demo/VAE9_VIG7/7*/
 demo/VAE9_VIG7/8*/
-demo/VAE9_VIG7/checkpoints/
+demo/VAE9_VIG7/checkpoints/*
+!demo/VAE9_VIG7/checkpoints/TRAIN_VAE.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
