@@ -82,7 +82,7 @@ clustering_sample_size: 1000
 embedding_algorithm: UMAP
 # UMAP or TSNE
 
-hdbscan_min_cluster_size: 100
+hdbscan_min_cluster_size: 50
 # the smallest size grouping to be consider an HDBSCAN cluster
 
 scatter_point_size: 50.0

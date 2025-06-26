@@ -1,10 +1,19 @@
 .synapseConfig
 *~
 
-# CyLinter directories
+# Ignore directories
 input/
 output/
 Ben/
+# Ignore all subdirectories under VAE9_VIG7 except 6_train_vae
+demo/VAE9_VIG7/1*/
+demo/VAE9_VIG7/2*/
+demo/VAE9_VIG7/3*/
+demo/VAE9_VIG7/4*/
+demo/VAE9_VIG7/5*/
+demo/VAE9_VIG7/7*/
+demo/VAE9_VIG7/8*/
+demo/VAE9_VIG7/checkpoints/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
