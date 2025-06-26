@@ -1,4 +1,5 @@
 import boto3
+import botocore
 import pathlib
 import tqdm
 
@@ -7,7 +8,10 @@ bucket = 'lsp-public-data'
 base = pathlib.Path(__file__).resolve().parent.parent
 print(f"Will download XX GB of files to {base}\n")
 
-client = boto3.client('s3')
+client = boto3.client(
+    's3',
+    config=botocore.config.Config(signature_version=botocore.UNSIGNED),
+)
 keys = []
 next_token = ''
 base_kwargs = {
