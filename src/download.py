@@ -6,7 +6,7 @@ import tqdm
 bucket = 'lsp-public-data'
 
 base = pathlib.Path(__file__).resolve().parent.parent
-print(f"Will download XX GB of files to {base}\n")
+print(f"Will download 335GB of files to {base}\n")
 
 client = boto3.client(
     's3',
