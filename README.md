@@ -40,13 +40,13 @@ Spatial proteomics (highly multiplexed tissue imaging) provides unprecedented in
 
 ## Running the computational notebooks 
 
-Python code in this GitHub repository is organized into Jupyter Notebooks and used to generate the figures shown in the paper. To run the code, first clone this repository onto your computer by opening a terminal window and entering the following command:
+Python code in this GitHub repository is organized into Jupyter notebooks used to generate the figures shown in the paper. To run the code, first clone this repository onto your computer by opening a terminal window and entering the following command:
 ```bash
 git clone https://github.com/labsyspharm/vae-paper.git
 
 ```
 
-Next, change directories into the top level of the cloned repository and create and activate a dedicated Conda environment containing the necessary Python libraries for running the code:
+Next, change directories into the top level directory of the cloned repository and create and activate a dedicated Conda environment containing the necessary Python libraries for running the code:
 
 ```bash
 cd <path/to/cloned/repo>
@@ -58,41 +58,47 @@ conda activate morphaeus-paper
 If conda is not already installed, you can download it by following the instructions provided [here](https://docs.anaconda.com/miniconda/).
 
 
-To browse the Jupyter Notebooks, change directories to the `src` folder and enter the following command:
+To browse the Jupyter notebooks, change directories to the `src` folder and activate Jupyter Lab with the following command:
 ```bash
 jupyter lab
 
 ```
 
- To re-run the Jupyter Notebooks, you must first download the required [input data](s3://lsp-public-data/baker-2025-vae/) from our public Amazon S3 bucket. This can be done by running the `download.py` script located the `src` folder. In addition to the input data, this script will also download a folder containing precomputed Notebook output files (`output_precomputed`):
+---
+
+## Downloading input data files 
+ To re-run the Jupyter notebooks, [input data](s3://lsp-public-data/baker-2025-vae/) must first be downloaded from our public Amazon S3 bucket. This can be done by running the `download.py` script located the `src` folder. In addition to the required input data, this script will also download a folder containing precomputed output files as a reference (`output_precomputed`):
 ```bash
+# from the top level directory
 python src/download.py
 
 ```
- Note: ~423GB of storage space is required to download the complete set of files.
+ Note: ~335GB of storage space is required to download the complete file set.
 
- To re-run any of the Notebooks, double click on a .ipynb file at the left of the Jupyter Lab interface and the Notebook will open at the right. Then click the double-arrow button at the top of the Notebook to restart the kernel and run all cells. Any Notebook output will be saved to a folder called `ouput` at the top level of the respository. 
+ To re-run any of the notebooks in Jupyter Lab, double click on a .ipynb file at the left of the screen and the notebook will open at the right. Next, click the double-arrow button at the top of the notebook to restart the kernel and run all cells. Notebook output will be saved to a folder called `output` at the top level of the repository.  
 
 ---
 
-## MORPHӔUS Source Code and Demo
+## MORPHӔUS source code and demo
 
-Source code for the [MORPHÆUS data analysis pipeline](https://github.com/labsyspharm/vae) is freely available on GitHub for academic re-use under the MIT license and is also archived on Zenodo.
+Source code for the [MORPHÆUS data analysis pipeline](https://github.com/labsyspharm/vae) is freely available for academic re-use under the MIT license on GitHub and is archived on Zenodo.
 
 
-To demo the pipeline, be sure that the input data files have first been downloaded from S3 as described above, then navigate to the `demo` directory and run the following command:
+To demo the pipeline, be sure that the input data files have been downloaded as described above, then change directories to the `demo` directory and run the following command:
 ```bash
 vae config.yml
 ```
 This will execute the pipeline on a small subsample of data from the CyCIF-1A image presented in the paper, demonstrating all major modules ranging from single-cell CSV subsampling and image patch generation, to VAE model training, plot visualization, and concept saliency analysis.
 
-Note: demo results will differ from those shown in the paper due to the use of a smaller training dataset and fewer training epochs. Each epoch is estimated to complete in about 30sec - 1min running locally on CPUs. In this example, ~100 epochs are required before learned reconstructions begin to resemble cells and the data start to form clusters in feature space. As a convenience, lightly pre-trained encoder and decoder networks are provided so that VAE model training can be skipped. For those wishing to train the model themselves, please comment out the encoder and decoder .hdf5 files and the `TRAIN_VAE.txt` checkpoint file prior to executing the pipeline. 
+Note: demo results will differ from those shown in the paper due to the use of a smaller training dataset and fewer training epochs. Each epoch is estimated to complete in about 30sec - 1min running locally on CPUs. For this example, ~100 epochs are required before learned reconstructions begin to resemble cells and the data start to form discrete clusters in feature space. As a convenience, lightly pre-trained encoder and decoder networks are provided so that the pipeline skips the VAE model training step. For those who desire to train a new model, prior to executing the pipeline, please comment out the `encoder.hdf5` and `decoder.hdf5` files as well as the `TRAIN_VAE.txt` checkpoint file. 
 
 ---
 
-## Data Availability
+## Zenodo archive
 
-Image files associated with this paper were first generated as part of the Human Tumor Atlas Network (HTAN) project and are available at the [HTAN Data Portal](https://data.humantumoratlas.org).
+This GitHub repository will be archived on Zenodo following publication of the manuscript.
+
+<!-- the link at [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10070212.svg)](https://doi.org/10.5281/zenodo.10070212) -->
 
 ---
 
@@ -102,12 +108,8 @@ This work was supported by Ludwig Cancer Research and the Ludwig Center at Harva
 
 ---
 
-## Zenodo Archive
-
-The Python code (i.e., Jupyter Notebooks) in this GitHub repository is archived on Zenodo at [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10070212.svg)](https://doi.org/10.5281/zenodo.10070212)
-
----
-
 ## References
 
-<a id="1">[1]</a> Baker GJ., Novikov E. et al. Morphology-Aware Profiling of Highly Multiplexed Tissue Images using Variational Autoencoders. **bioRxiv** (2025) https://doi.org/10.1101/2023.11.01.565120
+Baker GJ., Novikov E. et al. Morphology-Aware Profiling of Highly Multiplexed Tissue Images using Variational Autoencoders. **bioRxiv** (2025) https://doi.org/10.1101/2025.06.23.661064
+
+<!-- <a id="1">[1]</a> Baker GJ., Novikov E. et al. Morphology-Aware Profiling of Highly Multiplexed Tissue Images using Variational Autoencoders. **bioRxiv** (2025) https://doi.org/10.1101/2025.06.23.661064 -->
