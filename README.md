@@ -67,13 +67,13 @@ jupyter lab
 ---
 
 ## Downloading input data files 
- To re-run the Jupyter notebooks, [input data](s3://lsp-public-data/baker-2025-vae/) must first be downloaded from our public Amazon S3 bucket. This can be done by running the `download.py` script located the `src` folder. In addition to the required input data, this script will also download a folder containing precomputed output files as a reference (`output_precomputed`):
+ To re-run the Jupyter notebooks, [input data](s3://lsp-public-data/baker-2025-vae/) must first be downloaded from our public Amazon S3 bucket. This can be done by running the `download.py` script located the `src` folder. In addition to the required input data, this script will also download a folder containing precomputed output files as a reference (`output_reference`):
 ```bash
 # from the top level directory
 python src/download.py
 
 ```
- Note: ~335GB of storage space is required to download the complete file set.
+ Note: ~313GB of storage space is required to download the complete file set.
 
  To re-run any of the notebooks in Jupyter Lab, double click on a .ipynb file at the left of the screen and the notebook will open at the right. Next, click the double-arrow button at the top of the notebook to restart the kernel and run all cells. Notebook output will be saved to a folder called `output` at the top level of the repository.  
 
