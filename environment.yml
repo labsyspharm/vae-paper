@@ -2,6 +2,7 @@ name: morphaeus-paper
 channels:
   - conda-forge
   - labsyspharm
+  - nodefaults
 dependencies:
   - python=3
   - jupyterlab
@@ -26,4 +27,5 @@ dependencies:
   - tensorflow=2.15.0
   - boto3
   - tqdm
+  - imagecodecs
   - vae
