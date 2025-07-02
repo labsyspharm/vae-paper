@@ -2,8 +2,9 @@
 *~
 
 # Ignore
-input/
-output/
+input
+output
+output_reference
 Ben/
 # Ignore all subdirectories under VAE9_VIG7 except 6_train_vae
 demo/VAE9_VIG7/1*/
