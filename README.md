@@ -67,7 +67,7 @@ jupyter lab
 ---
 
 ## Downloading input data files 
- To re-run the Jupyter notebooks, [input data](s3://lsp-public-data/baker-2025-vae/) must first be downloaded from our public Amazon S3 bucket. This can be done by running the `download.py` script located the `src` folder. In addition to the required input data, this script will also download a folder containing precomputed output files as a reference (`output_reference`):
+ To re-run the Jupyter notebooks, [input data](s3://lsp-public-data/baker-2025-vae/) must first be downloaded from our public Amazon S3 bucket. This can be done by running the `download.py` script located in the `src` folder. In addition to the required input data, this script will also download a folder containing precomputed output files as a reference (`output_reference`):
 ```bash
 # from the top level directory
 python src/download.py
@@ -75,16 +75,16 @@ python src/download.py
 ```
  Note: ~313GB of storage space is required to download the complete file set.
 
- To re-run any of the notebooks in Jupyter Lab, double click on a .ipynb file at the left of the screen and the notebook will open at the right. Next, click the double-arrow button at the top of the notebook to restart the kernel and run all cells. Notebook output will be saved to a folder called `output` at the top level of the repository.  
+ To re-run any of the notebooks in Jupyter Lab, first double click on a .ipynb file at the left of the screen and the notebook will open at the right. Then, click the double-arrow button at the top of the notebook to restart the kernel and run all cells. Notebook output will be saved to a folder called `output` at the top level of the repository.  
 
 ---
 
 ## MORPHӔUS source code and demo
 
-Source code for the [MORPHÆUS data analysis pipeline](https://github.com/labsyspharm/vae) is freely available for academic re-use under the MIT license on GitHub and is archived on Zenodo.
+[MORPHÆUS](https://github.com/labsyspharm/vae) source code is freely available for academic re-use under the MIT license on GitHub and is archived on Zenodo.
 
 
-To demo the pipeline, be sure that the input data files have been downloaded as described above, then change directories to the `demo` directory and run the following command:
+To demo the data analysis pipeline, be sure that the input data files have first been downloaded as described above, then change directories to the `demo` directory and run the following command:
 ```bash
 vae config.yml
 ```
