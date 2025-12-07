@@ -28,4 +28,4 @@ dependencies:
   - boto3
   - tqdm
   - imagecodecs
-  - vae
+  - vae=0.0.7
