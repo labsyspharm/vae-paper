@@ -2,38 +2,30 @@ name: morphaeus-paper
 channels:
   - conda-forge
   - labsyspharm
+  - nodefaults
 dependencies:
-  - vae=0.0.7
+  - python=3.11
+  - jupyterlab
+  - yaml
+  - natsort
+  - ipython
+  - ipywidgets
+  - numpy
+  - pandas
+  - scipy
+  - scikit-image
+  - opencv
+  - pillow
+  - seaborn
+  - matplotlib
+  - 'zarr<3.0'  # zarr.open() fails in utils.single_channel_pyramid with zarr v3.0 
+  - dask
+  - napari['all']
+  - pyqt
+  - tifffile
   - keras
-
-# name: morphaeus-paper
-# channels:
-#   - conda-forge
-#   - labsyspharm
-#   - nodefaults
-# dependencies:
-#   - python
-#   - jupyterlab
-#   - yaml
-#   - natsort
-#   - ipython
-#   - ipywidgets
-#   - numpy
-#   - pandas
-#   - scipy
-#   - scikit-image
-#   - opencv
-#   - pillow
-#   - seaborn
-#   - matplotlib
-#   - 'zarr<3.0'  # zarr.open() fails in utils.single_channel_pyramid with zarr v3.0 
-#   - dask
-#   - napari['all']
-#   - pyqt
-#   - tifffile
-#   - keras
-#   - tensorflow=2.15.0
-#   - boto3
-#   - tqdm
-#   - imagecodecs
-#   - vae=0.0.6
+  - tensorflow=2.15.0
+  - boto3
+  - tqdm
+  - imagecodecs
+  - vae=0.0.7

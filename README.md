@@ -66,7 +66,7 @@ To browse the Jupyter notebooks, change directories to the `src` folder and acti
 jupyter lab
 
 ```
-Notebooks are pre-populated with output cells for ease of review. However, if you wish to interact with images loaded into the Napari image viewer by some of the notebooks, you will first need to download the input data from our public Amazon S3 bucket (see section below for instructions).
+Notebooks are pre-populated with output cells for ease of review. To re-run the notebooks or explore multiplex images displayed in the Napari image viewer by some notebooks, you must first download the input data from our public Amazon S3 bucket (instructions are provided in the section below).
 
 ---
 
