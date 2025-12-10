@@ -4,7 +4,7 @@ channels:
   - labsyspharm
   - nodefaults
 dependencies:
-  - python=3.11
+  - python<3.14
   - jupyterlab
   - yaml
   - natsort
