@@ -82,10 +82,10 @@ training_epochs: 100
 lasso_vector_tool: False
 # toggle to use lasso vector tool to visualize clusters of image patch learned reconstructions
 
-cluster_full_dataset: True
+cluster_full_dataset: False
 # whether to perform UMAP embedding and HDBSCAN clustering on combined training, validation, and test data (otherwise a sample of data whose size is specified by "clustering_sample_size" will be used)
 
-clustering_sample_size: 1000
+clustering_sample_size: 5000
 # sample size for clustering when "cluster_full_dataset" is False
 
 embedding_algorithm: UMAP
