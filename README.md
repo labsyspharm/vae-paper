@@ -83,16 +83,18 @@ python src/download.py
 
 ## MORPHӔUS source code and demo
 
-[MORPHÆUS source code](https://github.com/labsyspharm/vae) is freely available for academic re-use under the MIT license on GitHub and is archived on Zenodo.
+[MORPHÆUS source code](https://github.com/labsyspharm/vae) is freely available for academic re-use under the MIT license on GitHub.
 
 
 To run a demonstration of the MORPHÆUS analysis pipeline, be sure that the input data files have first been downloaded as described above, then change directories to the `demo` directory in the cloned vae-paper GitHub repository and run the following command:
 ```bash
 vae config.yml
 ```
-This will execute the pipeline on a subsample of 9x9um image patches from the CyCIF-1A image presented in the paper, demonstrating all major modules ranging from single-cell CSV subsampling and image patch generation, to VAE model training, plot visualization, and concept saliency analysis. Analysis output will be saved in `demo/VAE9_VIG7/`
+This will execute the pipeline on 9x9um image patches from the CyCIF-1A image presented in the paper, demonstrating all major modules ranging from single-cell CSV sampling and image patch generation, to VAE model training, plot visualization, and concept saliency analysis. Analysis output will be saved in `demo/VAE9_VIG7/`
 
-Please note that the demo results will differ from those presented in the paper because the demo uses a smaller training dataset and fewer training epochs. When running locally on CPUs, each epoch is expected to take approximately 5 minutes to complete; training may be significantly faster on GPUs. In this example, roughly 30 epochs are needed before the learned reconstructions begin to resemble their input image patches and before the patch embeddings start to form distinct clusters in feature space. For convenience, lightly pre-trained encoder and decoder networks are provided so that the pipeline can skip the VAE training step. For those interested in training a model from scratch, simply add a `#` to the beginning of the encoder.hdf5 and decoder.hdf5 filenames in the `demo/VAE9_VIG7/6_train_vae/` directory before running the pipeline. Do the same for the TRAIN_VAE.txt checkpoint file in `demo/VAE9_VIG7/checkpoints/`.
+Note that demo results will differ from those presented in the paper due to a smaller training dataset and fewer training epochs. For convenience, lightly pre-trained encoder and decoder networks are provided so that the pipeline can skip the VAE training step. For those interested in training a model from scratch, simply add a `#` to the beginning of the encoder.hdf5 and decoder.hdf5 filenames in the `demo/VAE9_VIG7/6_train_vae/` directory before running the pipeline. Do the same for the TRAIN_VAE.txt checkpoint file in `demo/VAE9_VIG7/checkpoints/`.
+
+When training the model locally on CPUs, each epoch is estimated to complete in approximately 5 minutes; however, training may be significantly faster using GPU resources. In this example, roughly 30 epochs are needed before learned reconstructions begin to resemble their respective input image patches and for patch embeddings to begin to form distinct clusters in feature space. 
 
 ---
 
