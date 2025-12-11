@@ -18,7 +18,7 @@ dependencies:
   - pillow
   - seaborn
   - matplotlib
-  - 'zarr<3.0'  # zarr.open() fails in utils.single_channel_pyramid with zarr v3.0 
+  - zarr<3.0  # zarr.open() fails in utils.single_channel_pyramid with zarr v3.0 
   - dask
   - napari['all']
   - pyqt
