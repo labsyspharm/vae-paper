@@ -99,6 +99,7 @@ scatter_point_size: 5.0
 
 zoom: 1.0
 # fold-increase in the size of learned reconstructions shown in scatter plots 
+
 channel_colors:
   CD4_488: 'tab:blue'
   Keratin_570: '#6eddff' 
