@@ -43,7 +43,7 @@ Spatial proteomics (highly multiplexed tissue imaging) provides unprecedented in
 
 ## Running the computational notebooks 
 
-Python code in this GitHub repository is organized into Jupyter notebooks used to generate the figures shown in the paper. To run the code, first clone this repository onto your computer by opening a terminal window and entering the following command:
+Python code in this GitHub repository is organized into Jupyter notebooks used to generate the figures shown in the paper. To view the notebooks, first clone this repository onto your computer by opening a terminal window and entering the following command:
 ```bash
 git clone https://github.com/labsyspharm/vae-paper.git
 
@@ -64,12 +64,12 @@ To browse the Jupyter notebooks, change directories to the `src` folder and acti
 jupyter lab
 
 ```
-Notebooks are pre-populated with output cells for ease of review. To re-run the notebooks or explore multiplex images displayed in the Napari image viewer by some notebooks, you must first download the input data from our public Amazon S3 bucket (instructions are provided in the section below).
+Notebooks are pre-populated with output cells for ease of review. To re-run the notebooks or explore multiplex images displayed in the Napari image viewer by some notebooks, input data must first be downloaded from our public Amazon S3 bucket (instructions are provided in the section below).
 
 ---
 
 ## Downloading input data files 
- To re-run the Jupyter notebooks, [input data](s3://lsp-public-data/baker-2025-vae/) must first be downloaded from our public Amazon S3 bucket into the the top-level directory of the cloned vae-paper GitHub repository. This can be acheived by running the `download.py` script located in the `src` folder from the top-level of the vae-paper repository. In addition to the required input data, this script will also download a folder containing precomputed output files as a reference (`output_reference`):
+ To re-run the Jupyter notebooks, [input data](s3://lsp-public-data/baker-2025-vae/) must first be downloaded from our public Amazon S3 bucket into the the top-level directory of the cloned vae-paper GitHub repository. This is acheived by running the `download.py` script located in the `src` folder from the top-level of the vae-paper repository. In addition to the required input data, this script will also download a folder containing precomputed output files as a reference (`output_reference`):
 ```bash
 # from the top-level directory of the cloned vae-paper GitHub repository
 python src/download.py
@@ -77,7 +77,7 @@ python src/download.py
 ```
  Note: ~335GB of storage space is required to download the complete file set.
 
- To re-run any of the notebooks in Jupyter Lab, first double click on the name of an .ipynb file at the left of the screen, the corresponding notebook will open at the right. Then click the double-arrow button at the top of the notebook to restart the kernel and run all the code cells. Notebook output will be saved to a folder called `output` in the top-level directory of the repository.  
+ To re-run any of the notebooks in Jupyter Lab, first double click on a notebook filename at the left of the screen, the corresponding notebook will then open at the right. Next click the double-arrow button at the top of the notebook to restart the kernel and run all of the code cells. Notebook output will be saved to a folder called `output` in the top-level directory of the repository.  
 
 ---
 
@@ -90,11 +90,9 @@ To run a demonstration of the MORPHÆUS analysis pipeline, be sure that the inpu
 ```bash
 vae config.yml
 ```
-This will execute the pipeline on 9x9um image patches from the CyCIF-1A image presented in the paper, demonstrating all major modules ranging from single-cell CSV sampling and image patch generation, to VAE model training, plot visualization, and concept saliency analysis. Analysis output will be saved in `demo/VAE9_VIG7/`
+This will execute the pipeline on 13x13um image patches from the CyCIF-1A image presented in the paper, demonstrating all major modules ranging from single-cell CSV sampling and image patch generation, to VAE model training, plot visualization, and concept saliency analysis. Analysis output will be saved in `demo/VAE13/`
 
-Note that demo results will differ from those presented in the paper due to a smaller training dataset and fewer training epochs. For convenience, lightly pre-trained encoder and decoder networks are provided so that the pipeline will skip the VAE training step. For those interested in training a model from scratch, simply add a `#` to the beginning of the encoder.hdf5 and decoder.hdf5 filenames in `demo/VAE9_VIG7/6_train_vae/` prior to running the pipeline. Do the same for the TRAIN_VAE.txt checkpoint file in `demo/VAE9_VIG7/checkpoints/`.
-
-When training the model locally on CPUs, each epoch is estimated to complete in approximately 5 minutes. Training may be significantly faster using GPU resources. In this example, roughly 30 epochs are required for patch embeddings to begin to form distinct clusters in feature space and for learned reconstructions to begin to resemble their respective input image patches. 
+For convenience, pre-trained encoder and decoder networks are provided so that the pipeline will skip the VAE training step. For those interested in training a model from scratch, simply add a `#` to the beginning of the `encoder.hdf5` and `decoder.hdf5` filenames in `demo/VAE13/6_train_vae/` prior to running the pipeline. Do the same for the TRAIN_VAE.txt checkpoint file in `demo/VAE13/checkpoints/`. When training the model locally on CPUs, epochs are estimated to complete in approximately 5 minutes each; training may be significantly faster using GPU resources. 
 
 ---
 
