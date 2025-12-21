@@ -1,7 +1,6 @@
 name: morphaeus
 channels:
   - conda-forge
-  - labsyspharm
   - nodefaults
 dependencies:
   - python=3.11
@@ -10,6 +9,7 @@ dependencies:
   - natsort
   - ipython
   - ipywidgets
+  - "blas=*=openblas" # force scipy to use OpenBlAS to avoid PC conflict with Tensorflow
   - scipy
   - pillow
   - matplotlib 
