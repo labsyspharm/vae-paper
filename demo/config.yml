@@ -55,7 +55,7 @@ cells_per_chunk: 200
 tiles_per_chunk: 5
 # similar to cells_per_chunk, but passed to the "cut_tiles" command. Indicates the number of image tiles in each chunk of the Zarr array used to store them
 
-cache_size_cellcutter: 57711  
+cache_size_cellcutter: 20000  
 # cellcutter cache size
 
 latent_dimension: 1680  # 20% of total pixels in 20-pixel x 20-pixel x 21-channel image patches

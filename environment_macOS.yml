@@ -4,27 +4,17 @@ channels:
   - labsyspharm
   - nodefaults
 dependencies:
-  - python<3.14
+  - python=3.11
   - jupyterlab
   - yaml
   - natsort
   - ipython
   - ipywidgets
-  - numpy
-  - pandas
   - scipy
-  - scikit-image
-  - opencv
   - pillow
-  - seaborn
-  - matplotlib
-  - zarr<3.0  # zarr.open() fails in utils.single_channel_pyramid with zarr v3.0 
-  - dask
+  - matplotlib 
   - napari['all']
   - pyqt
-  - tifffile
-  - keras
-  - tensorflow=2.15.0
   - boto3
   - tqdm
   - imagecodecs

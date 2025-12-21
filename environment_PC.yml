@@ -1,0 +1,20 @@
+name: morphaeus-paper
+channels:
+  - conda-forge
+  - labsyspharm
+  - nodefaults
+dependencies:
+  - python=3.11
+  - jupyterlab
+  - yaml
+  - natsort
+  - ipython
+  - ipywidgets
+  - scipy
+  - pillow
+  - matplotlib 
+  - napari['all']
+  - pyqt
+  - boto3
+  - tqdm
+  - imagecodecs
