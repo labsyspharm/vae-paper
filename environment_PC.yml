@@ -1,4 +1,4 @@
-name: morphaeus-paper
+name: morphaeus
 channels:
   - conda-forge
   - labsyspharm
