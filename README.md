@@ -43,18 +43,25 @@ Spatial proteomics (highly multiplexed tissue imaging) provides unprecedented in
 
 ## Running the computational notebooks 
 
-Python code in this GitHub repository is organized into Jupyter notebooks used to generate the figures shown in the paper. To view the notebooks, first clone this repository onto your computer by opening a terminal window and entering the following command:
+Python code in this GitHub repository is organized into Jupyter notebooks used to generate the figures shown in the paper. To view the notebooks, first clone this repository onto your computer by opening a terminal window and entering the following command. If git is not already installed, you can download it by following the instructions provided [here](https://git-scm.com/install/).
 ```bash
 git clone https://github.com/labsyspharm/vae-paper.git
 
 ```
 
-Next, change directories into the top level directory of the cloned repository and create and activate a dedicated Conda environment containing the necessary Python libraries for running the code. If conda is not already installed, you can download it by following the instructions provided [here](https://docs.anaconda.com/miniconda/).
+Next, change directories into the top level directory of the cloned repository and create and activate a dedicated Conda environment containing the necessary Python libraries for running the code. If conda is not already installed, you can download it by following the instructions provided [here](https://www.anaconda.com/download/success).
 
 ```bash
 cd <path/to/cloned/repo>
-conda env create -f environment.yml
+
+# macOS
+conda env create -f environment_macOS.yml
 conda activate morphaeus-paper
+
+# PC
+conda env create -f environment_PC.yml
+conda activate morphaeus-paper
+pip install git+https://github.com/labsyspharm/vae.git@v0.0.7
 
 ```
 
