@@ -43,13 +43,13 @@ Spatial proteomics (highly multiplexed tissue imaging) provides unprecedented in
 
 ## Running the computational notebooks 
 
-Python code in this GitHub repository is organized into Jupyter notebooks used to generate the figures shown in the paper. To view the notebooks, first clone this repository onto your computer by opening a terminal window and entering the following command. If git is not already installed, you can download it by following the instructions provided [here](https://git-scm.com/install/).
+Python code in this GitHub repository is organized as Jupyter notebooks for generating the figures shown in the paper. To view the notebooks, first clone the repository onto your computer by opening a terminal window and entering the following command below. If git is not already installed, you can download it by following the instructions provided [here](https://git-scm.com/install/).
 ```bash
 git clone https://github.com/labsyspharm/vae-paper.git
 
 ```
 
-Next, change directories into the top level directory of the cloned repository and create and activate a dedicated Conda environment containing the necessary Python libraries for running the code. If conda is not already installed, you can download it by following the instructions provided [here](https://www.anaconda.com/download/success).
+Next, change directories into the top-level directory of the cloned repository and create and activate a dedicated Conda environment containing the necessary Python libraries for running the code. If conda is not already installed, it can be downloaded by following the instructions provided [here](https://www.anaconda.com/download/success).
 
 ```bash
 cd <path/to/cloned/repo>
@@ -66,17 +66,17 @@ pip install git+https://github.com/labsyspharm/vae.git@v0.0.7
 ```
 
 
-To browse the Jupyter notebooks, change directories to the `src` folder and activate Jupyter Lab with the following command:
+To browse the notebooks, change directories to the `src` folder and activate Jupyter Lab:
 ```bash
 jupyter lab
 
 ```
-Notebooks are pre-populated with output cells for ease of review. To re-run the notebooks or explore multiplex images displayed in the Napari image viewer by some notebooks, input data must first be downloaded from our public Amazon S3 bucket (instructions are provided in the section below).
+Notebooks are pre-populated with output cells for ease of review. To re-run notebooks or explore multiplex images displayed in the Napari image viewer by some notebooks the `input` data must first be downloaded from our public Amazon S3 bucket (instructions are provided in the section below).
 
 ---
 
 ## Downloading input data files 
- To re-run the Jupyter notebooks, [input data](s3://lsp-public-data/baker-2025-vae/) must first be downloaded from our public Amazon S3 bucket into the the top-level directory of the cloned vae-paper GitHub repository. This is acheived by running the `download.py` script located in the `src` folder from the top-level of the vae-paper repository. In addition to the required input data, this script will also download a folder containing precomputed output files as a reference (`output_reference`):
+ To re-run the Jupyter notebooks, [`input` data](s3://lsp-public-data/baker-2025-vae/) must first be downloaded from our public Amazon S3 bucket into the the top-level directory of the cloned repository by running the `download.py` script located in the `src` folder from the top-level of the repository. In addition to the required data, this script will also download a folder containing precomputed output files for at-a-glance ease of reference (`output_reference`):
 ```bash
 # from the top-level directory of the cloned vae-paper GitHub repository
 python src/download.py
@@ -84,7 +84,7 @@ python src/download.py
 ```
  Note: ~335GB of storage space is required to download the complete file set.
 
- To re-run any of the notebooks in Jupyter Lab, first double click on a notebook filename at the left of the screen, the corresponding notebook will then open at the right. Next click the double-arrow button at the top of the notebook to restart the kernel and run all of the code cells. Notebook output will be saved to a folder called `output` in the top-level directory of the repository.  
+ To re-run any of the Jupyter notebooks, double click on a notebook filename at the left of the screen to open the corresponding notebook at the right. Next click the double-arrow button at the top of the notebook interface to restart the kernel and run all of the code cells. Notebook output is saved to a folder called `output` in the top-level directory of the repository.  
 
 ---
 
@@ -93,13 +93,13 @@ python src/download.py
 [MORPHÆUS source code](https://github.com/labsyspharm/vae) is freely available for academic re-use under the MIT license on GitHub.
 
 
-To run a demonstration of the MORPHÆUS analysis pipeline, be sure that the input data files have first been downloaded as described above, then change directories to the `demo` directory in the cloned vae-paper GitHub repository and run the following command:
+To run a demonstration of the MORPHÆUS pipeline, be sure that `input` data files have first been downloaded as described above, then change directories to the `demo` directory in the cloned repository and run the following command:
 ```bash
 vae config.yml
 ```
-This will execute the pipeline on 13x13um image patches from the CyCIF-1A image presented in the paper, demonstrating all major modules ranging from single-cell CSV sampling and image patch generation, to VAE model training, plot visualization, and concept saliency analysis. Depending on image sizes, the cutting and storage of image patches in the `RUN_CELLCUTTER` module can be memory intensive; a minimum of 32GB RAM is required to run the demo without having to modify the `cache_size_cellcutter` and `cells_per_chunk` parameters in `config.yml`. All analysis output will be saved in `demo/VAE13/`
+This will execute the pipeline on 13x13um image patches from the CyCIF-1A image presented in the paper, demonstrating all major modules ranging from single-cell sampling and image patch cropping, to VAE model training, plot visualization, and concept saliency analysis. Depending on the size of images, the cutting and storage of image patches generated in the `RUN_CELLCUTTER` module can be memory limiting; a minimum of 32GB RAM is required to run this demo without having to alter the `cache_size_cellcutter` and `cells_per_chunk` parameters in the MORPHÆUS configuration file (`config.yml`). Output is saved to `demo/VAE13/`
 
-For convenience, pre-trained encoder and decoder networks are provided so that the pipeline will skip the VAE training module. For those interested in training a model from scratch, simply add a `#` to the beginning of the `encoder.hdf5` and `decoder.hdf5` filenames in `demo/VAE13/6_train_vae/` prior to running the pipeline. Do the same for the TRAIN_VAE.txt checkpoint file in `demo/VAE13/checkpoints/`. When training the model locally on CPUs, epochs are estimated to complete in approximately 5 minutes each; training may be significantly faster using GPU resources. 
+For convenience, lightly pre-trained encoder and decoder networks are provided such that the pipeline skips the VAE training module. For those interested in training a model from scratch, simply add a `#` to the beginning of the `encoder.hdf5` and `decoder.hdf5` filenames in `demo/VAE13/6_train_vae/` before running the pipeline; do the same for the TRAIN_VAE.txt checkpoint file in `demo/VAE13/checkpoints/`. When training on CPUs using relatively modern machines, epochs are estimated to complete in about 5 minutes each; training may be accelerated greatly using GPU resources. 
 
 ---
 
