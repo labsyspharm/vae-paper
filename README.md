@@ -93,7 +93,7 @@ python src/download.py
 [MORPHÆUS source code](https://github.com/labsyspharm/vae) is freely available for academic re-use under the MIT license on GitHub.
 
 
-To run the MORPHÆUS pipeline demonstration, you must first download the `input` data files whose names begin with `CyCIF-1A`, as described above. These correspond to the first ten files downloaded when running the `src/download.py` script; the remaining files are not required for the MORPHÆUS demo, so the download process can be stopped after these are obtained. Once the `CyCIF-1A` files have been downloaded, navigate to the demo directory in the cloned repository and run the following command:
+To run the MORPHÆUS pipeline demonstration, `input` data files whose names begin with `CyCIF-1A` must first be downloaded. These correspond to the first ten files downloaded after running the `download.py` script above; the remaining files are not required for the MORPHÆUS demo, so the download process can be terminated once these are obtained. Next, navigate to the demo directory in the cloned repository and run the following command:
 ```bash
 # from the demo directory
 vae config.yml
