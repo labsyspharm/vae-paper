@@ -5,6 +5,7 @@ channels:
   - nodefaults
 dependencies:
   - python=3.11
+  - setuptools=68.2.2 # avoiding setuptools–Python3.11 incompatibilities
   - jupyterlab
   - yaml
   - natsort
